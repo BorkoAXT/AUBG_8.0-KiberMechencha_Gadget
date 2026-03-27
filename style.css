@@ -1,0 +1,33 @@
+/* ============================================================
+   style.css  –  Survival Encyclopedia  |  Game Test
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+}
+
+/* ── Game section fills the whole viewport ── */
+#game-section {
+  position: relative;   /* needed for HUD overlays in game.js */
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: #000;
+}
+
+/* ── Canvas fills its parent exactly ── */
+#game-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: none;
+}
