@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Survival.AI | Telemetry Database</title>
+    <title>CivExit | Telemetry Database</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,9 +35,9 @@
 
     <nav class="flex justify-between items-center p-6 border-b border-zinc-800/50 backdrop-blur-xl sticky top-0 z-40">
         <div class="flex items-center gap-4">
-            <div class="w-12 h-12 border-2 border-amber-500 rounded flex items-center justify-center text-amber-500 font-black text-2xl shadow-[0_0_20px_rgba(245,158,11,0.2)]">S</div>
+            <div class="w-12 h-12 border-2 border-amber-500 rounded flex items-center justify-center text-amber-500 font-black text-2xl shadow-[0_0_20px_rgba(245,158,11,0.2)]">C</div>
             <div class="flex flex-col">
-                <span class="font-sans tracking-tight text-xl font-black uppercase text-white">Survival.AI</span>
+                <span class="font-sans tracking-tight text-xl font-black uppercase text-white">CivExit</span>
                 <span class="text-xs text-zinc-500 font-mono tracking-widest uppercase">Global_Telemetry</span>
             </div>
         </div>
@@ -53,7 +53,7 @@
                 <h1 class="text-3xl md:text-5xl font-black uppercase tracking-tight text-white">Survival Metrics</h1>
             </div>
             <div class="text-right font-mono text-xs text-zinc-500">
-                <p>Nods connected: 14,204</p>
+                <p>Nodes connected: 14,204</p>
                 <p class="text-green-500 animate-pulse">Status: Receiving Data</p>
             </div>
         </div>
@@ -87,6 +87,7 @@
             </div>
 
         </div>
+
         <div class="mt-12 grid lg:grid-cols-3 gap-8">
             
             <div class="lg:col-span-2 bg-red-950/20 border border-red-900/50 p-6 relative overflow-hidden group">
@@ -110,7 +111,7 @@
                 <h2 class="font-mono text-sm text-amber-500 tracking-widest uppercase mb-4">Export Telemetry</h2>
                 <p class="text-zinc-400 text-sm mb-6">Download the raw global JSON dataset for local machine learning model training.</p>
                 
-                <button onclick="downloadDummyCSV()" class="w-full py-3 bg-amber-500 text-zinc-950 font-mono font-bold text-xs uppercase hover:bg-amber-400 transition-colors flex justify-center items-center gap-2">
+                <button onclick="downloadCivExitCSV()" class="w-full py-3 bg-amber-500 text-zinc-950 font-mono font-bold text-xs uppercase hover:bg-amber-400 transition-colors flex justify-center items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     Download RAW (.CSV)
                 </button>
@@ -120,18 +121,47 @@
         </div>
 
         <script>
-            function downloadDummyCSV() {
+            function downloadCivExitCSV() {
                 const csvContent = "data:text/csv;charset=utf-8,User_ID,Scenario,Panic_Score,Calm_Score,Survived\n1092,Earthquake,8,2,False\n1093,Winter_Blackout,3,7,True\n1094,Urban_Water,9,1,False";
                 const encodedUri = encodeURI(csvContent);
                 const link = document.createElement("a");
                 link.setAttribute("href", encodedUri);
-                link.setAttribute("download", "survival_telemetry_export.csv");
+                link.setAttribute("download", "civexit_telemetry_export.csv");
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
             }
         </script>
     </main>
+
+    <footer class="bg-zinc-900 text-zinc-400 py-12 border-t border-zinc-800 text-sm font-mono relative z-10">
+        <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-8">
+            <div>
+                <div class="flex items-center gap-3 mb-4 text-white">
+                    <div class="w-8 h-8 bg-amber-500 text-zinc-950 rounded flex items-center justify-center font-black text-lg">C</div>
+                    <span class="font-sans font-black tracking-tight uppercase text-xl">CivExit</span>
+                </div>
+                <p class="text-xs leading-relaxed mb-4">
+                    An offline-first, algorithmic crisis response engine designed to mitigate panic and provide actionable survival intelligence during localized or global grid failures.
+                </p>
+            </div>
+            <div>
+                <h4 class="text-white font-bold uppercase tracking-widest mb-4 border-b border-zinc-800 pb-2">Directory</h4>
+                <ul class="space-y-2">
+                    <li><a href="game.html" class="hover:text-amber-500 transition-colors">> Run Simulation</a></li>
+                    <li><a href="database.html" class="hover:text-amber-500 transition-colors">> Survival Database</a></li>
+                    <li><a href="quiz.html" class="hover:text-amber-500 transition-colors">> Readiness Assessment</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white font-bold uppercase tracking-widest mb-4 border-b border-zinc-800 pb-2">System Status</h4>
+                <ul class="space-y-2">
+                    <li class="flex justify-between"><span>Mainframe:</span> <span class="text-green-500">ONLINE</span></li>
+                    <li class="flex justify-between"><span>DB Sync:</span> <span class="text-green-500">SECURE</span></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
 
     <script src="src/js/database.js"></script>
 </body>
