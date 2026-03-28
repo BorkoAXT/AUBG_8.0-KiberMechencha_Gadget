@@ -1,0 +1,12 @@
+{
+  "name": "survival-encyclopedia",
+  "version": "1.0.0",
+  "description": "Hackathon 48-hour project - Survival AI",
+  "scripts": {
+    "dev": "tailwindcss -i ./src/css/tailwind-input.css -o ./style.css --watch",
+    "build": "tailwindcss -i ./src/css/tailwind-input.css -o ./style.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.1"
+  }
+}

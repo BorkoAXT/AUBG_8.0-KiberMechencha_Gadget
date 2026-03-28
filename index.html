@@ -4,38 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Survival.AI | Offline Crisis Engine</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Outfit', 'sans-serif'],
-                        mono: ['Space Mono', 'monospace'],
-                    },
-                    colors: {
-                        amber: { 400: '#fbbf24', 500: '#f59e0b', 600: '#d97706' },
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        .cursor-blink { animation: blink 1s step-end infinite; }
-        @keyframes blink { 50% { opacity: 0; } }
-        
-        .bg-noise {
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-            opacity: 0.04;
-            pointer-events: none;
-        }
-        .ticker-move { animation: ticker 20s linear infinite; }
-        @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-    </style>
+    <link href="./style.css" rel="stylesheet">
 </head>
 <body class="text-zinc-200 antialiased selection:bg-amber-500 selection:text-zinc-950 relative overflow-x-hidden">
 
@@ -94,9 +68,9 @@
                             <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                         </span>
                     </button>
-                    <button class="px-8 py-4 border border-zinc-700 text-zinc-300 font-mono text-sm uppercase tracking-widest hover:bg-zinc-800 transition-all">
-                        View Database
-                    </button>
+                    <a href="database.html" class="inline-flex justify-center items-center px-8 py-4 border border-zinc-700 text-zinc-300 font-mono text-sm uppercase tracking-widest hover:bg-zinc-800 transition-all">
+                            View Database
+                    </a>
                 </div>
             </div>
 
@@ -150,7 +124,6 @@
             </div>
 
             <div class="grid md:grid-cols-3 gap-8 relative z-10">
-                
                 <div class="group bg-zinc-900/40 border border-zinc-800 p-8 hover:border-amber-500/50 hover:bg-zinc-900 transition-all duration-300 relative overflow-hidden">
                     <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-100 transition-opacity">
                         <svg class="w-16 h-16 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="1" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
@@ -177,10 +150,10 @@
                     <h4 class="text-2xl font-bold uppercase mb-4 text-white">Panic Override</h4>
                     <p class="text-zinc-400 font-light leading-relaxed">Transforms chaos into calm. By providing structured, algorithmic lists, the brain switches from emotional panic to logical execution.</p>
                 </div>
-
             </div>
         </div>
     </section>
+
     <section id="flow" class="py-32 bg-zinc-950 border-t border-zinc-900 relative overflow-hidden">
         <div class="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-amber-500/5 to-transparent pointer-events-none"></div>
 
@@ -252,5 +225,6 @@
         </div>
     </section>
 
+    <script src="src/js/main.js"></script>
 </body>
 </html>

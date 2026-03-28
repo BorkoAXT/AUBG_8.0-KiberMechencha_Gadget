@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth bg-zinc-950">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survival.AI | Telemetry Database</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'], mono: ['Space Mono', 'monospace'] },
+                    colors: { amber: { 400: '#fbbf24', 500: '#f59e0b', 600: '#d97706' } }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        .bg-noise {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.04; pointer-events: none;
+        }
+    </style>
+</head>
+<body class="text-zinc-200 antialiased selection:bg-amber-500 selection:text-zinc-950 relative overflow-x-hidden min-h-screen flex flex-col">
+
+    <div class="fixed inset-0 bg-noise z-0 mix-blend-overlay"></div>
+
+    <nav class="flex justify-between items-center p-6 border-b border-zinc-800/50 backdrop-blur-xl sticky top-0 z-40">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 border-2 border-amber-500 rounded flex items-center justify-center text-amber-500 font-black text-2xl shadow-[0_0_20px_rgba(245,158,11,0.2)]">S</div>
+            <div class="flex flex-col">
+                <span class="font-sans tracking-tight text-xl font-black uppercase text-white">Survival.AI</span>
+                <span class="text-xs text-zinc-500 font-mono tracking-widest uppercase">Global_Telemetry</span>
+            </div>
+        </div>
+        <a href="index.html" class="font-mono text-sm border border-zinc-700 px-6 py-2 hover:bg-zinc-800 hover:text-amber-500 transition-all duration-300">
+            [ RETURN HOME ]
+        </a>
+    </nav>
+
+    <main class="flex-grow relative z-10 max-w-7xl mx-auto w-full px-6 py-12">
+        <div class="mb-12 border-b border-zinc-800 pb-6 flex justify-between items-end">
+            <div>
+                <span class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-2 block">Database // Live Sync</span>
+                <h1 class="text-3xl md:text-5xl font-black uppercase tracking-tight text-white">Survival Metrics</h1>
+            </div>
+            <div class="text-right font-mono text-xs text-zinc-500">
+                <p>Nods connected: 14,204</p>
+                <p class="text-green-500 animate-pulse">Status: Receiving Data</p>
+            </div>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-8">
+            
+            <div class="bg-zinc-900/40 border border-zinc-800 p-6 flex flex-col items-center">
+                <h2 class="font-mono text-sm text-amber-500 tracking-widest uppercase mb-6 w-full border-b border-zinc-800 pb-2">Your Assessment Profile</h2>
+                <div class="w-full max-w-[250px] aspect-square relative">
+                    <canvas id="userChart"></canvas>
+                </div>
+                <div id="user-stats-text" class="mt-6 font-mono text-xs text-zinc-400 text-center w-full bg-zinc-950 p-4 border border-zinc-800">
+                    Loading local assessment data...
+                </div>
+            </div>
+
+            <div class="bg-zinc-900/40 border border-zinc-800 p-6 flex flex-col items-center">
+                <h2 class="font-mono text-sm text-zinc-400 tracking-widest uppercase mb-6 w-full border-b border-zinc-800 pb-2">Global Survival Rate (72 Hrs)</h2>
+                <div class="w-full max-w-[250px] aspect-square relative">
+                    <canvas id="globalSurvivalChart"></canvas>
+                </div>
+                <p class="mt-6 font-mono text-xs text-zinc-500 text-center">Based on aggregated simulated blackout scenarios across all networked users.</p>
+            </div>
+
+            <div class="bg-zinc-900/40 border border-zinc-800 p-6 flex flex-col items-center">
+                <h2 class="font-mono text-sm text-zinc-400 tracking-widest uppercase mb-6 w-full border-b border-zinc-800 pb-2">Primary Causes of Failure</h2>
+                <div class="w-full max-w-[250px] aspect-square relative">
+                    <canvas id="failureCausesChart"></canvas>
+                </div>
+                <p class="mt-6 font-mono text-xs text-zinc-500 text-center">Data indicates psychological panic outweighs physical resource scarcity.</p>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="src/js/database.js"></script>
+</body>
+</html>
