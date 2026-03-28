@@ -87,6 +87,50 @@
             </div>
 
         </div>
+        <div class="mt-12 grid lg:grid-cols-3 gap-8">
+            
+            <div class="lg:col-span-2 bg-red-950/20 border border-red-900/50 p-6 relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-4 opacity-20">
+                    <svg class="w-24 h-24 text-red-500 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                </div>
+                <h2 class="font-mono text-sm text-red-500 tracking-widest uppercase mb-4 flex items-center gap-2">
+                    <span class="w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
+                    Critical Vulnerability Identified
+                </h2>
+                <h3 class="text-2xl font-bold uppercase text-white mb-2">The "Run Outside" Instinct</h3>
+                <p class="text-zinc-400 font-light mb-4 max-w-xl">
+                    Data shows <strong class="text-red-400">72% of users</strong> instinctually choose to run out of a building during a severe earthquake simulation. In urban environments, this results in fatal injuries from falling glass and facade debris. 
+                </p>
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-red-500/10 border border-red-500/50 text-red-400 font-mono text-xs">
+                    CORRECT ACTION: Drop, Cover, and Hold On.
+                </div>
+            </div>
+
+            <div class="bg-amber-500/10 border border-amber-500/30 p-6 flex flex-col justify-center items-center text-center">
+                <h2 class="font-mono text-sm text-amber-500 tracking-widest uppercase mb-4">Export Telemetry</h2>
+                <p class="text-zinc-400 text-sm mb-6">Download the raw global JSON dataset for local machine learning model training.</p>
+                
+                <button onclick="downloadDummyCSV()" class="w-full py-3 bg-amber-500 text-zinc-950 font-mono font-bold text-xs uppercase hover:bg-amber-400 transition-colors flex justify-center items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Download RAW (.CSV)
+                </button>
+                <p class="text-[10px] text-zinc-600 font-mono mt-3 uppercase">File Size: 14.2 MB</p>
+            </div>
+
+        </div>
+
+        <script>
+            function downloadDummyCSV() {
+                const csvContent = "data:text/csv;charset=utf-8,User_ID,Scenario,Panic_Score,Calm_Score,Survived\n1092,Earthquake,8,2,False\n1093,Winter_Blackout,3,7,True\n1094,Urban_Water,9,1,False";
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "survival_telemetry_export.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        </script>
     </main>
 
     <script src="src/js/database.js"></script>

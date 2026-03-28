@@ -2,7 +2,6 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     
-    // --- 1. Global Chart Settings for Dark Mode ---
     Chart.defaults.color = '#a1a1aa'; // zinc-400 text
     Chart.defaults.font.family = "'Space Mono', monospace";
     
