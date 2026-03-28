@@ -1550,7 +1550,7 @@
 
     // Interaction prompt
     promptEl = document.createElement("div"); promptEl.id = "interact-prompt";
-    promptEl.style.cssText = `position:absolute;bottom:80px;left:50%;transform:translateX(-50%);font-family:var(--font-cond,'Barlow Condensed',sans-serif);font-size:1.1rem;font-weight:600;letter-spacing:0.08em;color:#fff;background:rgba(0,0,0,0.7);border:1px solid rgba(255,255,255,0.25);padding:8px 18px;border-radius:6px;pointer-events:none;z-index:25;display:none;text-align:center;`;
+    promptEl.style.cssText = `position:absolute;bottom:130px;left:50%;transform:translateX(-50%);font-family:var(--font-cond,'Barlow Condensed',sans-serif);font-size:1.2rem;font-weight:700;letter-spacing:0.06em;color:#fff;background:rgba(0,0,0,0.75);border:2px solid rgba(255,255,255,0.3);padding:10px 24px;border-radius:8px;pointer-events:none;z-index:25;display:none;text-align:center;text-shadow:0 1px 4px rgba(0,0,0,0.9);box-shadow:0 4px 16px rgba(0,0,0,0.4);`;
     wrapper.appendChild(promptEl);
 
     // Crouch indicator
@@ -1558,7 +1558,7 @@
 
     // Item indicator
     const itemEl = document.createElement("div"); itemEl.id = "item-indicator";
-    itemEl.style.cssText = `position:absolute;top:110px;left:30px;font-family:var(--font-cond,'Barlow Condensed',sans-serif);font-size:0.85rem;font-weight:600;letter-spacing:0.1em;color:#e8e0d0;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.15);padding:5px 12px;border-radius:4px;pointer-events:none;z-index:20;display:none;`;
+    itemEl.style.cssText = `position:absolute;top:188px;left:20px;font-family:var(--font-cond,'Barlow Condensed',sans-serif);font-size:0.95rem;font-weight:700;letter-spacing:0.08em;color:#e8e0d0;background:rgba(0,0,0,0.65);border:2px solid rgba(255,255,255,0.18);padding:8px 16px;border-radius:6px;pointer-events:none;z-index:20;display:none;text-shadow:0 1px 3px rgba(0,0,0,0.8);box-shadow:0 2px 8px rgba(0,0,0,0.3);`;
     wrapper.appendChild(itemEl);
 
     outcomeEl = document.createElement("div"); outcomeEl.id = "outcome-screen"; outcomeEl.style.display = "none"; wrapper.appendChild(outcomeEl);
