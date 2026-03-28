@@ -24,14 +24,82 @@
   scene.background = new THREE.Color(0x1a1410);
   scene.fog = new THREE.Fog(0x1a1410, 20, 44);
 
-  const camera = new THREE.PerspectiveCamera(
-    72,
-    canvas.clientWidth / canvas.clientHeight,
-    0.05,
-    100
-  );
+  const camera = new THREE.PerspectiveCamera(72, canvas.clientWidth / canvas.clientHeight, 0.05, 100);
   camera.rotation.order = "YXZ";
   camera.position.set(0, 1.7, 0);
+
+  // ── Procedural Audio Engine ─────────────────────────────────
+  const listener = new THREE.AudioListener();
+  camera.add(listener);
+
+  const sounds = {
+    rumble: new THREE.Audio(listener),
+    crash: new THREE.Audio(listener),
+    heartbeat: new THREE.Audio(listener)
+  };
+
+  const audioCtx = THREE.AudioContext.getContext();
+
+  // 1. Generate Deep Earthquake Rumble (Brownian Noise)
+  function createRumbleBuffer() {
+    const len = audioCtx.sampleRate * 2; // 2 seconds, loops perfectly
+    const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    let lastOut = 0;
+    for (let i = 0; i < len; i++) {
+      let white = Math.random() * 2 - 1;
+      // Leaky integrator creates deep low-frequency noise
+      lastOut = (lastOut + 0.02 * white) / 1.02; 
+      data[i] = lastOut * 3.5; // Boost gain
+    }
+    return buf;
+  }
+
+  // 2. Generate Debris Crash (Crunchy decay noise)
+  function createCrashBuffer() {
+    const len = audioCtx.sampleRate * 0.6; // 0.6 seconds long
+    const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    let lastOut = 0;
+    for (let i = 0; i < len; i++) {
+      let white = Math.random() * 2 - 1;
+      lastOut = (lastOut + 0.3 * white) / 1.3; // Milder filter for "crunch"
+      // Exponential decay envelope
+      let envelope = Math.exp(-i / (audioCtx.sampleRate * 0.08));
+      data[i] = lastOut * envelope * 2.0;
+    }
+    return buf;
+  }
+
+  // 3. Generate Panic Heartbeat (Dual Sine Wave Thump)
+  function createHeartbeatBuffer() {
+    const len = audioCtx.sampleRate * 1.0; // 1 beat per second (60 BPM)
+    const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) {
+      const t = i / audioCtx.sampleRate;
+      // Lub...
+      const env1 = Math.exp(-t * 15);
+      // ...Dub
+      const env2 = t > 0.25 ? Math.exp(-(t - 0.25) * 15) : 0;
+      // 40Hz Sine wave produces a heavy chest thump
+      data[i] = Math.sin(t * 40 * Math.PI * 2) * (env1 + env2) * 1.5;
+    }
+    return buf;
+  }
+
+  // Apply generated buffers to audio sources
+  sounds.rumble.setBuffer(createRumbleBuffer());
+  sounds.rumble.setLoop(true);
+  sounds.rumble.setVolume(0);
+
+  sounds.crash.setBuffer(createCrashBuffer());
+  sounds.crash.setVolume(0.8);
+
+  sounds.heartbeat.setBuffer(createHeartbeatBuffer());
+  sounds.heartbeat.setLoop(true);
+  sounds.heartbeat.setVolume(0);
+
 
   // ── Game state ──────────────────────────────────────────────
   const STATE = { CALM: 0, QUAKE: 1, DONE: 2 };
@@ -65,58 +133,16 @@
 
   // ── Materials ───────────────────────────────────────────────
   const M = {
-    wall: new THREE.MeshStandardMaterial({
-      color: 0xd4c9b8,
-      roughness: 0.95,
-      metalness: 0.0,
-    }),
-    floor: new THREE.MeshStandardMaterial({
-      color: 0x7a6347,
-      roughness: 0.92,
-      metalness: 0.0,
-    }),
-    ceiling: new THREE.MeshStandardMaterial({
-      color: 0xc8bfb0,
-      roughness: 0.95,
-      metalness: 0.0,
-    }),
-    wood: new THREE.MeshStandardMaterial({
-      color: 0x6b4c2a,
-      roughness: 0.88,
-      metalness: 0.0,
-    }),
-    darkWood: new THREE.MeshStandardMaterial({
-      color: 0x3d2b14,
-      roughness: 0.9,
-      metalness: 0.0,
-    }),
-    sofa: new THREE.MeshStandardMaterial({
-      color: 0x4a5568,
-      roughness: 0.95,
-      metalness: 0.0,
-    }),
-    sofaCush: new THREE.MeshStandardMaterial({
-      color: 0x5a6578,
-      roughness: 0.98,
-      metalness: 0.0,
-    }),
-    tableTop: new THREE.MeshStandardMaterial({
-      color: 0x5a3e22,
-      roughness: 0.88,
-      metalness: 0.0,
-    }),
-    tableLeg: new THREE.MeshStandardMaterial({
-      color: 0x7c5c3a,
-      roughness: 0.85,
-      metalness: 0.0,
-    }),
-
-    window: new THREE.MeshLambertMaterial({
-      color: 0x8ab4e8,
-      transparent: true,
-      opacity: 0.3,
-      side: THREE.DoubleSide,
-    }),
+    wall: new THREE.MeshStandardMaterial({ color: 0xd4c9b8, roughness: 0.95, metalness: 0.0 }),
+    floor: new THREE.MeshStandardMaterial({ color: 0x7a6347, roughness: 0.92, metalness: 0.0 }),
+    ceiling: new THREE.MeshStandardMaterial({ color: 0xc8bfb0, roughness: 0.95, metalness: 0.0 }),
+    wood: new THREE.MeshStandardMaterial({ color: 0x6b4c2a, roughness: 0.88, metalness: 0.0 }),
+    darkWood: new THREE.MeshStandardMaterial({ color: 0x3d2b14, roughness: 0.9, metalness: 0.0 }),
+    sofa: new THREE.MeshStandardMaterial({ color: 0x4a5568, roughness: 0.95, metalness: 0.0 }),
+    sofaCush: new THREE.MeshStandardMaterial({ color: 0x5a6578, roughness: 0.98, metalness: 0.0 }),
+    tableTop: new THREE.MeshStandardMaterial({ color: 0x5a3e22, roughness: 0.88, metalness: 0.0 }),
+    tableLeg: new THREE.MeshStandardMaterial({ color: 0x7c5c3a, roughness: 0.85, metalness: 0.0 }),
+    window: new THREE.MeshLambertMaterial({ color: 0x8ab4e8, transparent: true, opacity: 0.3, side: THREE.DoubleSide }),
     windowFr: new THREE.MeshLambertMaterial({ color: 0xd4c9b8 }),
     door: new THREE.MeshLambertMaterial({ color: 0x8b6914 }),
     doorFr: new THREE.MeshLambertMaterial({ color: 0xc8bfb0 }),
@@ -127,27 +153,14 @@
     book2: new THREE.MeshLambertMaterial({ color: 0x6b1a1a }),
     book3: new THREE.MeshLambertMaterial({ color: 0x1a6b3a }),
     frame: new THREE.MeshLambertMaterial({ color: 0x222222 }),
-    safe: new THREE.MeshLambertMaterial({
-      color: 0x22c55e,
-      transparent: true,
-      opacity: 0.22,
-      side: THREE.DoubleSide,
-    }),
+    safe: new THREE.MeshLambertMaterial({ color: 0x22c55e, transparent: true, opacity: 0.22, side: THREE.DoubleSide }),
     plaster: new THREE.MeshLambertMaterial({ color: 0xd4c9b8 }),
     concrete: new THREE.MeshLambertMaterial({ color: 0x888888 }),
     debris: new THREE.MeshLambertMaterial({ color: 0x7c5c3a }),
     bed: new THREE.MeshLambertMaterial({ color: 0xeeeeee }),
     blanket: new THREE.MeshLambertMaterial({ color: 0x3b5998 }),
-    handle: new THREE.MeshStandardMaterial({
-      color: 0x8c8c8c,
-      roughness: 0.45,
-      metalness: 0.9,
-    }),
-    wardrobePanel: new THREE.MeshStandardMaterial({
-      color: 0x4a321c,
-      roughness: 0.9,
-      metalness: 0.0,
-    }),
+    handle: new THREE.MeshStandardMaterial({ color: 0x8c8c8c, roughness: 0.45, metalness: 0.9 }),
+    wardrobePanel: new THREE.MeshStandardMaterial({ color: 0x4a321c, roughness: 0.9, metalness: 0.0 }),
   };
 
   // ── Lights ──────────────────────────────────────────────────
@@ -196,13 +209,7 @@
 
   const colliders = [];
   function addCollider(px, pz, hw, hd, crouchPassable = false) {
-    colliders.push({
-      minX: px - hw,
-      maxX: px + hw,
-      minZ: pz - hd,
-      maxZ: pz + hd,
-      crouchPassable,
-    });
+    colliders.push({ minX: px - hw, maxX: px + hw, minZ: pz - hd, maxZ: pz + hd, crouchPassable });
   }
 
   function b(w, h, d, mat, px, py, pz, rx, ry, rz) {
@@ -249,13 +256,9 @@
   b(0.1, 2.35, 1.65, M.door, 2.7, 1.18, 5.825);
   addCollider(2.7, 5.825, 0.1, 0.825);
 
-  // Living Room Physical Bulb
   b(0.16, 0.25, 0.16, M.frame, 0, RH - 0.12, 0);
   const bulb1Mat = new THREE.MeshBasicMaterial({ color: 0xffffee });
-  const bulb1Mesh = new THREE.Mesh(
-    new THREE.SphereGeometry(0.13, 16, 16),
-    bulb1Mat
-  );
+  const bulb1Mesh = new THREE.Mesh(new THREE.SphereGeometry(0.13, 16, 16), bulb1Mat);
   bulb1Mesh.position.set(0, 2.7, 0);
   scene.add(bulb1Mesh);
 
@@ -270,19 +273,14 @@
   addCollider(5, 10, 0.15, 5);
   addCollider(0, 15, 5, 0.15);
 
-  // Bedroom Physical Bulb
   b(0.16, 0.25, 0.16, M.frame, 0, RH - 0.12, 10);
   const bulb2Mat = new THREE.MeshBasicMaterial({ color: 0xffffee });
-  const bulb2Mesh = new THREE.Mesh(
-    new THREE.SphereGeometry(0.13, 16, 16),
-    bulb2Mat
-  );
+  const bulb2Mesh = new THREE.Mesh(new THREE.SphereGeometry(0.13, 16, 16), bulb2Mat);
   bulb2Mesh.position.set(0, 2.7, 10);
   scene.add(bulb2Mesh);
 
   // ── LIVING ROOM FURNITURE ───────────────────────────────────
   b(4.5, 0.02, 3.5, M.rug, -1, 0.01, 0.8);
-
   b(3.4, 0.48, 1.0, M.sofa, -1.5, 0.24, 3.0);
   b(3.4, 0.9, 0.24, M.sofa, -1.5, 0.69, 3.38);
   b(0.24, 0.68, 1.0, M.sofa, -3.1, 0.48, 3.0);
@@ -327,17 +325,12 @@
   addCollider(shX, shZ, 0.22, 0.65);
 
   b(0.32, 0.42, 0.32, M.pot, -4.4, 0.21, 2.8);
-  const plantM = new THREE.Mesh(
-    new THREE.SphereGeometry(0.48, 8, 8),
-    M.plant
-  );
+  const plantM = new THREE.Mesh(new THREE.SphereGeometry(0.48, 8, 8), M.plant);
   plantM.position.set(-4.4, 0.78, 2.8);
   plantM.castShadow = true;
   scene.add(plantM);
 
   // ── BEDROOM FURNITURE ───────────────────────────────────────
-
-  // Bed rotated 180°: pillows/head side moved to the opposite end
   b(3.5, 0.4, 4.5, M.wood, 2.5, 0.2, 12);
   b(3.3, 0.25, 4.3, M.bed, 2.5, 0.45, 12);
   b(3.4, 0.27, 2.6, M.blanket, 2.5, 0.46, 11.15);
@@ -347,32 +340,22 @@
 
   b(4.0, 0.02, 4.0, M.rug, 0, 0.01, 11);
 
-  // More detailed wardrobe
-  // main body
   b(2.5, 2.5, 1.0, M.darkWood, -3.5, 1.25, 14.5);
-  // top trim
   b(2.66, 0.08, 1.08, M.wood, -3.5, 2.54, 14.5);
-  // bottom plinth
   b(2.58, 0.12, 1.02, M.wood, -3.5, 0.06, 14.5);
-  // side outer trims
   b(0.08, 2.42, 1.04, M.wood, -4.75, 1.25, 14.5);
   b(0.08, 2.42, 1.04, M.wood, -2.25, 1.25, 14.5);
-  // door panels
   b(0.78, 2.22, 0.05, M.wardrobePanel, -4.08, 1.26, 13.98);
   b(0.78, 2.22, 0.05, M.wardrobePanel, -3.5, 1.26, 13.98);
   b(0.78, 2.22, 0.05, M.wardrobePanel, -2.92, 1.26, 13.98);
-  // door separators
   b(0.04, 2.28, 0.06, M.wood, -3.79, 1.26, 13.99);
   b(0.04, 2.28, 0.06, M.wood, -3.21, 1.26, 13.99);
-  // door handles
   b(0.04, 0.28, 0.03, M.handle, -3.82, 1.28, 13.94);
   b(0.04, 0.28, 0.03, M.handle, -3.18, 1.28, 13.94);
-  // subtle feet
   b(0.18, 0.08, 0.18, M.wood, -4.45, 0.04, 14.12);
   b(0.18, 0.08, 0.18, M.wood, -2.55, 0.04, 14.12);
   b(0.18, 0.08, 0.18, M.wood, -4.45, 0.04, 14.88);
   b(0.18, 0.08, 0.18, M.wood, -2.55, 0.04, 14.88);
-
   addCollider(-3.5, 14.5, 1.25, 0.5);
 
   b(2.0, 0.1, 1.2, M.wood, -3.5, 1.0, 7.5);
@@ -380,7 +363,6 @@
   b(0.1, 1.0, 0.1, M.wood, -2.6, 0.5, 7.0);
   b(0.1, 1.0, 0.1, M.wood, -4.4, 0.5, 8.0);
   b(0.1, 1.0, 0.1, M.wood, -2.6, 0.5, 8.0);
-
   addCollider(-4.4, 7.0, 0.05, 0.05);
   addCollider(-2.6, 7.0, 0.05, 0.05);
   addCollider(-4.4, 8.0, 0.05, 0.05);
@@ -400,10 +382,7 @@
 
   const safeZoneMeshes = safeZones.map((sz) => {
     const grp = new THREE.Group();
-    const cone = new THREE.Mesh(
-      new THREE.ConeGeometry(0.15, 0.4, 6),
-      new THREE.MeshBasicMaterial({ color: 0x4ade80 })
-    );
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.4, 6), new THREE.MeshBasicMaterial({ color: 0x4ade80 }));
     cone.position.y = -0.2;
     grp.add(cone);
     grp.position.set(sz.center.x, 2.4, sz.center.z);
@@ -416,14 +395,8 @@
   const debrisMats = [M.plaster, M.concrete, M.debris];
   for (let i = 0; i < 60; i++) {
     const s = 0.07 + Math.random() * 0.25;
-    const geo = Math.random() < 0.55
-      ? new THREE.BoxGeometry(s, s * 0.55, s * 0.85)
-      : new THREE.DodecahedronGeometry(s * 0.6, 0);
-
-    const mesh = new THREE.Mesh(
-      geo,
-      debrisMats[Math.floor(Math.random() * 3)]
-    );
+    const geo = Math.random() < 0.55 ? new THREE.BoxGeometry(s, s * 0.55, s * 0.85) : new THREE.DodecahedronGeometry(s * 0.6, 0);
+    const mesh = new THREE.Mesh(geo, debrisMats[Math.floor(Math.random() * 3)]);
     mesh.castShadow = true;
     mesh.visible = false;
     mesh._vy = 0;
@@ -438,7 +411,13 @@
   const PITCH_MAX = Math.PI / 2.2;
 
   canvas.addEventListener("click", () => {
-    if (gameState !== STATE.DONE) canvas.requestPointerLock();
+    if (gameState !== STATE.DONE) {
+      canvas.requestPointerLock();
+      // Browsers block audio until the user interacts (clicks the canvas)
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
   });
 
   document.addEventListener("pointerlockchange", () => {
@@ -462,18 +441,8 @@
     if (e.code === "KeyC") {
       if (isCrouching) {
         const p = camera.position;
-        const underLivingTable =
-          Math.sqrt(
-            Math.pow(p.x - safeZones[0].center.x, 2) +
-            Math.pow(p.z - safeZones[0].center.z, 2)
-          ) < safeZones[0].radius;
-
-        const underBedroomDesk =
-          Math.sqrt(
-            Math.pow(p.x - safeZones[2].center.x, 2) +
-            Math.pow(p.z - safeZones[2].center.z, 2)
-          ) < safeZones[2].radius;
-
+        const underLivingTable = Math.sqrt(Math.pow(p.x - safeZones[0].center.x, 2) + Math.pow(p.z - safeZones[0].center.z, 2)) < safeZones[0].radius;
+        const underBedroomDesk = Math.sqrt(Math.pow(p.x - safeZones[2].center.x, 2) + Math.pow(p.z - safeZones[2].center.z, 2)) < safeZones[2].radius;
         if (!underLivingTable && !underBedroomDesk) isCrouching = false;
       } else {
         isCrouching = true;
@@ -492,7 +461,6 @@
   function resolveColliders(px, pz) {
     for (const c of colliders) {
       if (c.crouchPassable && isCrouching) continue;
-
       const nearX = Math.max(c.minX, Math.min(c.maxX, px));
       const nearZ = Math.max(c.minZ, Math.min(c.maxZ, pz));
       const dx = px - nearX;
@@ -520,10 +488,7 @@
     const crouchMul = isCrouching ? 0.5 : 1.0;
     const spd = (gameState === STATE.QUAKE ? SPEED * 0.6 : SPEED) * crouchMul * dt;
 
-    camera.getWorldDirection(fwd);
-    fwd.y = 0;
-    fwd.normalize();
-
+    camera.getWorldDirection(fwd); fwd.y = 0; fwd.normalize();
     rgt.crossVectors(fwd, camera.up).normalize();
 
     mdir.set(0, 0, 0);
@@ -534,22 +499,18 @@
 
     if (mdir.lengthSq() > 0) {
       mdir.normalize().multiplyScalar(spd);
-
       let nx = camera.position.x + mdir.x;
       let nz = camera.position.z;
       const rx = resolveColliders(nx, nz);
-      nx = rx.px;
-      nz = rx.pz;
+      nx = rx.px; nz = rx.pz;
 
       nz += mdir.z;
       const rz = resolveColliders(nx, nz);
-      nx = rz.px;
-      nz = rz.pz;
+      nx = rz.px; nz = rz.pz;
 
       camera.position.x = Math.max(-4.7, Math.min(4.7, nx));
       camera.position.z = Math.max(-4.7, Math.min(14.7, nz));
     }
-
     camera.position.y = currentEyeY;
   }
 
@@ -600,12 +561,20 @@
           d._fallen = true;
           d.position.y = 0.1;
           flashScreen("rgba(220,30,30,0.4)", 350);
+          
+          if (sounds.crash.isPlaying) sounds.crash.stop();
+          sounds.crash.play();
         }
       }
 
       if (d.position.y <= 0.1) {
         d.position.y = 0.1;
         d._fallen = true;
+        
+        // Floor hit crash
+        if (!sounds.crash.isPlaying) {
+          sounds.crash.play();
+        }
       }
     }
   }
@@ -626,68 +595,32 @@
     const wrapper = canvas.parentElement;
     if (getComputedStyle(wrapper).position === "static") wrapper.style.position = "relative";
 
-    const hint = document.createElement("div");
-    hint.id = "game-hint";
-    hint.innerHTML = `
-      <div class="gh-title">🏢 EARTHQUAKE SCENARIO</div>
-      <div class="gh-sub">Click anywhere to enter</div>
-      <div class="gh-keys">
-        <span>WASD</span> Move &nbsp;·&nbsp;
-        <span>Mouse</span> Look &nbsp;·&nbsp;
-        <span>C</span> Crouch &nbsp;·&nbsp;
-        <span>Esc</span> Exit
-      </div>
-      <div class="gh-warn">⚠ An earthquake will strike in 30 seconds. Find cover.</div>
-    `;
+    const hint = document.createElement("div"); hint.id = "game-hint";
+    hint.innerHTML = `<div class="gh-title">🏢 EARTHQUAKE SCENARIO</div><div class="gh-sub">Click anywhere to enter</div><div class="gh-keys"><span>WASD</span> Move &nbsp;·&nbsp;<span>Mouse</span> Look &nbsp;·&nbsp;<span>C</span> Crouch &nbsp;·&nbsp;<span>Esc</span> Exit</div><div class="gh-warn">⚠ An earthquake will strike in 30 seconds. Find cover.</div>`;
     wrapper.appendChild(hint);
 
-    const cross = document.createElement("div");
-    cross.id = "game-crosshair";
+    const cross = document.createElement("div"); cross.id = "game-crosshair";
     cross.innerHTML = `<svg viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="8" stroke="rgba(255,255,255,.75)" stroke-width="1.5" stroke-linecap="round"/><line x1="12" y1="16" x2="12" y2="22" stroke="rgba(255,255,255,.75)" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="12" x2="8" y2="12" stroke="rgba(255,255,255,.75)" stroke-width="1.5" stroke-linecap="round"/><line x1="16" y1="12" x2="22" y2="12" stroke="rgba(255,255,255,.75)" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="12" r="1.2" fill="rgba(255,255,255,.6)"/></svg>`;
     cross.style.display = "none";
     wrapper.appendChild(cross);
 
-    document.addEventListener("pointerlockchange", () => {
-      cross.style.display = document.pointerLockElement === canvas ? "block" : "none";
-    });
+    document.addEventListener("pointerlockchange", () => { cross.style.display = document.pointerLockElement === canvas ? "block" : "none"; });
 
-    const pw = document.createElement("div");
-    pw.id = "panic-wrap";
+    const pw = document.createElement("div"); pw.id = "panic-wrap";
     pw.innerHTML = `<div id="panic-label">PANIC</div><div id="panic-bar"><div id="panic-fill"></div></div>`;
     wrapper.appendChild(pw);
     panicFill = document.getElementById("panic-fill");
 
-    const hw = document.createElement("div");
-    hw.id = "health-wrap";
+    const hw = document.createElement("div"); hw.id = "health-wrap";
     hw.innerHTML = `<div id="health-label">HEALTH</div><div id="health-bar"><div id="health-fill"></div></div>`;
     wrapper.appendChild(hw);
     healthFill = document.getElementById("health-fill");
 
-    timerEl = document.createElement("div");
-    timerEl.id = "game-timer";
-    wrapper.appendChild(timerEl);
-
-    statusEl = document.createElement("div");
-    statusEl.id = "game-status";
-    statusEl.textContent = "Explore your apartment. Something feels off...";
-    wrapper.appendChild(statusEl);
-
-    safeEl = document.createElement("div");
-    safeEl.id = "safe-label";
-    safeEl.textContent = "✓ SAFE — STAY HERE";
-    safeEl.style.display = "none";
-    wrapper.appendChild(safeEl);
-
-    const crouchEl = document.createElement("div");
-    crouchEl.id = "crouch-indicator";
-    crouchEl.textContent = "▼ CROUCHING";
-    crouchEl.style.display = "none";
-    wrapper.appendChild(crouchEl);
-
-    outcomeEl = document.createElement("div");
-    outcomeEl.id = "outcome-screen";
-    outcomeEl.style.display = "none";
-    wrapper.appendChild(outcomeEl);
+    timerEl = document.createElement("div"); timerEl.id = "game-timer"; wrapper.appendChild(timerEl);
+    statusEl = document.createElement("div"); statusEl.id = "game-status"; statusEl.textContent = "Explore your apartment. Something feels off..."; wrapper.appendChild(statusEl);
+    safeEl = document.createElement("div"); safeEl.id = "safe-label"; safeEl.textContent = "✓ SAFE — STAY HERE"; safeEl.style.display = "none"; wrapper.appendChild(safeEl);
+    const crouchEl = document.createElement("div"); crouchEl.id = "crouch-indicator"; crouchEl.textContent = "▼ CROUCHING"; crouchEl.style.display = "none"; wrapper.appendChild(crouchEl);
+    outcomeEl = document.createElement("div"); outcomeEl.id = "outcome-screen"; outcomeEl.style.display = "none"; wrapper.appendChild(outcomeEl);
   }
 
   function updateHUD() {
@@ -706,6 +639,17 @@
     const crouchEl = document.getElementById("crouch-indicator");
     if (crouchEl) crouchEl.style.display = isCrouching ? "block" : "none";
 
+    // Play heartbeat audio if panic goes over 70%
+    if (panic > 70 && sounds.heartbeat.buffer && !sounds.heartbeat.isPlaying) {
+      sounds.heartbeat.play();
+    } else if (panic <= 70 && sounds.heartbeat.isPlaying) {
+      sounds.heartbeat.stop();
+    }
+    // Fade the heartbeat volume based on how far past 70% panic is
+    if (sounds.heartbeat.isPlaying) {
+      sounds.heartbeat.setVolume((panic - 70) / 30);
+    }
+
     if (gameState === STATE.CALM) {
       const rem = Math.ceil(CALM_DURATION - calmTimer);
       timerEl.textContent = "";
@@ -720,17 +664,8 @@
       timerEl.textContent = `QUAKE: ${Math.ceil(QUAKE_DURATION - quakeTimer)}s`;
       const p = camera.position;
 
-      const nearTable =
-        Math.sqrt(
-          Math.pow(p.x - safeZones[0].center.x, 2) +
-          Math.pow(p.z - safeZones[0].center.z, 2)
-        ) < safeZones[0].radius;
-
-      const nearDesk =
-        Math.sqrt(
-          Math.pow(p.x - safeZones[2].center.x, 2) +
-          Math.pow(p.z - safeZones[2].center.z, 2)
-        ) < safeZones[2].radius;
+      const nearTable = Math.sqrt(Math.pow(p.x - safeZones[0].center.x, 2) + Math.pow(p.z - safeZones[0].center.z, 2)) < safeZones[0].radius;
+      const nearDesk = Math.sqrt(Math.pow(p.x - safeZones[2].center.x, 2) + Math.pow(p.z - safeZones[2].center.z, 2)) < safeZones[2].radius;
 
       if (isHiding) {
         statusEl.textContent = "✓ Stay hidden! Wait for it to pass...";
@@ -748,6 +683,10 @@
   function showOutcome() {
     gameState = STATE.DONE;
     document.exitPointerLock();
+
+    // Kill audio at the end screen
+    if(sounds.rumble.isPlaying) sounds.rumble.stop();
+    if(sounds.heartbeat.isPlaying) sounds.heartbeat.stop();
 
     const hint = document.getElementById("game-hint");
     if (hint) hint.style.display = "none";
@@ -830,6 +769,10 @@
         safeViz.forEach(v => v.visible = true);
         safeZoneMeshes.forEach(v => v.visible = true);
         flashScreen("rgba(255,200,40,0.55)", 500);
+
+        if (sounds.rumble.buffer && !sounds.rumble.isPlaying) {
+          sounds.rumble.play();
+        }
       }
     }
 
@@ -839,6 +782,11 @@
       const ramp = Math.min(1, quakeTimer / 3);
       const ease = progress > 0.8 ? 1 - (progress - 0.8) / 0.2 : 1;
       shakeIntensity = 0.14 * ramp * ease;
+
+      // Fade up earthquake audio with intensity
+      if (sounds.rumble.isPlaying) {
+        sounds.rumble.setVolume(ramp * ease * 1.8);
+      }
 
       cameraBase.copy(camera.position);
       camera.position.x += (Math.random() - 0.5) * shakeIntensity * 2.2;
@@ -870,7 +818,6 @@
 
       updateDebris(dt);
 
-      // Better quake flicker, tuned for darker baseline
       const flicker1 =
         1.35 +
         Math.sin(t * 24) * 0.22 * ramp +
