@@ -1,13 +1,5 @@
 // ============================================================
 //  game.js  –  Survival Encyclopedia  |  Scenario 1: Earthquake
-//
-//  FLOW:
-//   0-30s  → Calm apartment, player explores freely
-//   30s    → Earthquake starts, screen shakes, debris falls
-//           → Player must reach a SAFE ZONE (under table/doorframe)
-//           → Panic rises while exposed, drops when hiding
-//           → Debris deals damage if player is not hiding
-//   Quake ends (25s) → Outcome screen based on panic + health
 // ============================================================
 
 (function () {
@@ -50,12 +42,12 @@
   const EYE_STAND  = 1.7;
   const EYE_CROUCH = 0.75;
   let   isCrouching  = false;
-  let   currentEyeY  = EYE_STAND;  // smoothly lerped each frame
+  let   currentEyeY  = EYE_STAND;
 
   // ── Safe zones: under table, in doorframe ────────────────────
   const safeZones = [
-    { center: new THREE.Vector3(-2.5, 0, 0.8), radius: 1.9 },  // bigger table
-    { center: new THREE.Vector3(3.8,  0, 4.3), radius: 1.3 },
+    { center: new THREE.Vector3(-2.5, 0, 0.8), radius: 1.9 },
+    { center: new THREE.Vector3(3.5,  0, 5.0), radius: 1.5 },
   ];
 
   // ── Debris pool ───────────────────────────────────────────────
@@ -108,7 +100,6 @@
     debris:   new THREE.MeshLambertMaterial({ color: 0x7c5c3a }),
   };
 
-  // Axis-aligned bounding boxes for solid collision
   const colliders = [];
   function addCollider(px, pz, hw, hd) {
     colliders.push({ minX: px-hw, maxX: px+hw, minZ: pz-hd, maxZ: pz+hd });
@@ -127,107 +118,99 @@
   // ── Room ──────────────────────────────────────────────────────
   const RW = 10, RH = 3, RD = 10;
 
-  b(RW, 0.12, RD,   M.floor,   0, -0.06, 0);           // floor
-  b(RW, 0.12, RD,   M.ceiling, 0, RH+0.06, 0);         // ceiling
-  b(RW, RH, 0.12,   M.wall,    0, RH/2, -RD/2);        // back wall
-  b(0.12, RH, RD,   M.wall,    -RW/2, RH/2, 0);        // left wall
-  // Right wall with window opening
-  b(0.12, RH, 3.5,  M.wall,    RW/2, RH/2, 2.7);
-  b(0.12, RH, 2.5,  M.wall,    RW/2, RH/2, -3.2);
-  b(0.12, 0.85, 4,  M.wall,    RW/2, 0.42, -0.5);      // below window
-  b(0.12, 0.55, 4,  M.wall,    RW/2, RH-0.27, -0.5);   // above window
-  // Front wall with door gap
-  b(3, RH, 0.12,    M.wall,    -3.0, RH/2, RD/2);
-  b(2, RH, 0.12,    M.wall,     4.5, RH/2, RD/2);
-  b(RW, 0.7, 0.12,  M.wall,    0, RH-0.35, RD/2);
+  b(RW, 0.12, RD,   M.floor,   0, -0.06, 0);           
+  b(RW, 0.12, RD,   M.ceiling, 0, RH+0.06, 0);         
 
-  // ── Room colliders (walls) ───────────────────────────────────
-  // Back wall
-  addCollider(0, -RD/2, RW/2, 0.15);
-  // Left wall
-  addCollider(-RW/2, 0, 0.15, RD/2);
-  // Right wall (treat as full even with window gap — thin enough)
-  addCollider(RW/2, 0, 0.15, RD/2);
-  // Front wall left chunk
-  addCollider(-3.0, RD/2, 1.5, 0.15);
-  // Front wall right chunk
-  addCollider(4.5, RD/2, 1.0, 0.15);
+  b(RW, RH, 0.12,   M.wall,    0, RH/2, -5);           
+  b(0.12, RH, RD,   M.wall,    -5, RH/2, 0);           
 
-  // ── Window ────────────────────────────────────────────────────
-  b(0.06, 1.65, 3.8, M.window,  RW/2-0.04, 1.8, -0.5);
-  b(0.14, 1.68, 0.1, M.windowFr, RW/2, 1.8,  1.4);
-  b(0.14, 1.68, 0.1, M.windowFr, RW/2, 1.8, -2.4);
-  b(0.14, 0.1,  3.8, M.windowFr, RW/2, 2.64, -0.5);
-  b(0.14, 0.1,  3.8, M.windowFr, RW/2, 0.97, -0.5);
+  b(0.12, RH, 4,    M.wall,    5, 1.5, 3);             
+  b(0.12, RH, 3,    M.wall,    5, 1.5, -3.5);          
+  b(0.12, 0.85, 3,  M.wall,    5, 0.425, -0.5);        
+  b(0.12, 0.5, 3,   M.wall,    5, 2.75, -0.5);         
 
-  // ── Doorframe ─────────────────────────────────────────────────
-  b(0.14, 2.4, 0.18, M.doorFr,  2.55, 1.2, RD/2);
-  b(0.14, 2.4, 0.18, M.doorFr,  4.45, 1.2, RD/2);
-  b(0.14, 0.18, 1.9, M.doorFr,  3.5, 2.45, RD/2);
-  b(1.8, 2.35, 0.1,  M.door,    3.5, 1.2, RD/2-0.06);  // door leaf
+  b(7.6, RH, 0.12,  M.wall,    -1.2, 1.5, 5);          
+  b(0.6, RH, 0.12,  M.wall,    4.7, 1.5, 5);           
+  b(1.8, 0.6, 0.12, M.wall,    3.5, 2.7, 5);           
 
-  // ── Floor rug ─────────────────────────────────────────────────
+  addCollider(0, -5, 5, 0.15);         
+  addCollider(-5, 0, 0.15, 5);         
+  addCollider(5, 3, 0.15, 2);          
+  addCollider(5, -3.5, 0.15, 1.5);     
+  addCollider(-1.2, 5, 3.8, 0.15);     
+  addCollider(4.7, 5, 0.3, 0.15);      
+
+  // ── Window & Doorframe ────────────────────────────────────────
+  b(0.06, 1.65, 2.9, M.window,  5, 1.675, -0.5);
+  b(0.14, 1.68, 0.1, M.windowFr, 5, 1.675,  0.95);
+  b(0.14, 1.68, 0.1, M.windowFr, 5, 1.675, -1.95);
+  b(0.14, 0.1,  3.0, M.windowFr, 5, 2.45, -0.5);
+  b(0.14, 0.1,  3.0, M.windowFr, 5, 0.85, -0.5);
+
+  b(0.14, 2.4, 0.18, M.doorFr,  2.65, 1.2, 5);
+  b(0.14, 2.4, 0.18, M.doorFr,  4.35, 1.2, 5);
+  b(1.7, 0.18, 0.18, M.doorFr,  3.5, 2.4, 5);
+  b(1.65, 2.35, 0.1, M.door,    3.5, 1.18, 4.95);
+
+  // ── Furniture ─────────────────────────────────────────────────
   b(4.5, 0.02, 3.5, M.rug, -1, 0.01, 0.8);
 
-  // ── Sofa ──────────────────────────────────────────────────────
-  b(3.4, 0.48, 1.0, M.sofa,    -1.5, 0.24, 3.0);           // seat
-  b(3.4, 0.9,  0.24, M.sofa,   -1.5, 0.69, 2.52);          // back
-  b(0.24, 0.68, 1.0, M.sofa,   -3.1, 0.48, 3.0);           // arm L
-  b(0.24, 0.68, 1.0, M.sofa,    0.1, 0.48, 3.0);           // arm R
+  b(3.4, 0.48, 1.0, M.sofa,    -1.5, 0.24, 3.0);
+  b(3.4, 0.9,  0.24, M.sofa,   -1.5, 0.69, 2.52);
+  b(0.24, 0.68, 1.0, M.sofa,   -3.1, 0.48, 3.0);
+  b(0.24, 0.68, 1.0, M.sofa,    0.1, 0.48, 3.0);
   b(0.95, 0.1, 0.85, M.sofaCush,-2.5, 0.5, 3.0);
   b(0.95, 0.1, 0.85, M.sofaCush,-1.5, 0.5, 3.0);
   b(0.95, 0.1, 0.85, M.sofaCush,-0.5, 0.5, 3.0);
+  addCollider(-1.5, 2.95, 1.75, 0.60);
 
-  // Sofa collider (seat + back as one block)
-  addCollider(-1.5, 2.95, 1.75, 0.60);  // sofa (seat + back + arms)
+  b(3.0, 0.1, 1.8, M.tableTop, -2.5, 1.1, 0.8);     
+  b(0.1, 1.05, 0.1, M.tableLeg, -3.9, 0.525,  1.65);
+  b(0.1, 1.05, 0.1, M.tableLeg, -1.1, 0.525,  1.65);
+  b(0.1, 1.05, 0.1, M.tableLeg, -3.9, 0.525, -0.05);
+  b(0.1, 1.05, 0.1, M.tableLeg, -1.1, 0.525, -0.05);
+  
+  addCollider(-3.9, 1.65, 0.15, 0.15);
+  addCollider(-1.1, 1.65, 0.15, 0.15);
+  addCollider(-3.9, -0.05, 0.15, 0.15);
+  addCollider(-1.1, -0.05, 0.15, 0.15);
 
-  // ── Coffee table — bigger (SAFE ZONE 1) ──────────────────────
-  // Table top: 3.0 wide x 1.8 deep, centred at (-2.5, 0.76, 0.8)
-  b(3.0, 0.1, 1.8, M.tableTop, -2.5, 0.76, 0.8);
-  b(0.1, 0.72, 0.1, M.tableLeg, -3.9, 0.36,  1.65);
-  b(0.1, 0.72, 0.1, M.tableLeg, -1.1, 0.36,  1.65);
-  b(0.1, 0.72, 0.1, M.tableLeg, -3.9, 0.36, -0.05);
-  b(0.1, 0.72, 0.1, M.tableLeg, -1.1, 0.36, -0.05);
-  b(2.7, 0.06, 0.06, M.tableLeg, -2.5, 0.42, 0.8);  // crossbar
-  // Collider for table solid body (player walks around, not through)
-  addCollider(-2.5, 0.8, 1.55, 0.95);
-
-  // ── TV stand + TV ─────────────────────────────────────────────
   b(2.8, 0.5, 0.55, M.darkWood,  0, 0.25, -4.9);
   b(0.1, 0.9, 0.55, M.darkWood, -1.3, 0.7, -4.9);
   b(0.1, 0.9, 0.55, M.darkWood,  1.3, 0.7, -4.9);
   b(2.8, 0.06, 0.55, M.darkWood, 0, 1.14, -4.9);
-  b(1.9, 1.05, 0.08, M.frame,    0, 1.65, -4.86);  // TV
-  addCollider(0, -4.9, 1.45, 0.32);   // TV stand collider
+  b(1.9, 1.05, 0.08, M.frame,    0, 1.65, -4.86);
+  addCollider(0, -4.9, 1.45, 0.32);
 
-  // ── Bookshelf ─────────────────────────────────────────────────
-  b(1.25, 2.3, 0.38, M.wood,    -4.4, 1.15, -3.5);
-  addCollider(-4.4, -3.5, 0.65, 0.22);  // bookshelf collider
-  for (let i = 0; i < 3; i++) {
-    b(0.12, 0.58, 0.3, M.book,  -4.18, 0.42+i*0.72, -3.5);
-    b(0.12, 0.62, 0.3, M.book2, -4.38, 0.42+i*0.72, -3.5);
-    b(0.12, 0.5,  0.3, M.book3, -4.58, 0.42+i*0.72, -3.5);
-    b(0.12, 0.55, 0.3, M.book,  -4.74, 0.42+i*0.72, -3.5);
-  }
+  const shX = -4.3, shZ = -3.5;
+  b(0.05, 2.3, 0.38, M.wood, shX-0.6, 1.15, shZ);   
+  b(0.05, 2.3, 0.38, M.wood, shX+0.6, 1.15, shZ);   
+  b(1.25, 2.3, 0.05, M.wood, shX, 1.15, shZ-0.165); 
+  
+  const shelfY = [0.1, 0.8, 1.5, 2.2];
+  shelfY.forEach(y => {
+    b(1.15, 0.05, 0.33, M.wood, shX, y, shZ);
+    b(0.12, 0.58, 0.3, M.book,  shX+0.2, y+0.31, shZ);
+    b(0.12, 0.62, 0.3, M.book2, shX, y+0.33, shZ);
+    b(0.12, 0.5,  0.3, M.book3, shX-0.2, y+0.27, shZ);
+    b(0.12, 0.55, 0.3, M.book,  shX-0.35, y+0.3, shZ);
+  });
+  addCollider(shX, shZ, 0.65, 0.22); 
 
-  // ── Plant ─────────────────────────────────────────────────────
   b(0.32, 0.42, 0.32, M.pot,  -4.4, 0.21, 2.8);
   const plantM = new THREE.Mesh(new THREE.SphereGeometry(0.48, 8, 8), M.plant);
   plantM.position.set(-4.4, 0.78, 2.8);
   plantM.castShadow = true;
   scene.add(plantM);
 
-  // ── Ceiling lamp ──────────────────────────────────────────────
   b(0.16, 0.25, 0.16, M.frame, 0, RH-0.12, 0);
   const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 8), M.bulb);
   bulb.position.set(0, RH-0.3, 0);
   scene.add(bulb);
-
-  // ── Picture frames ────────────────────────────────────────────
   b(0.92, 0.68, 0.05, M.frame, -2.0, 1.65, -4.94);
   b(0.68, 0.52, 0.05, M.frame,  1.6, 1.72, -4.94);
 
-  // ── Safe zone visualisers (glow patches on floor) ─────────────
+  // ── Safe zone visualisers ─────────────────────────────────────
   const safeViz = safeZones.map(sz => {
     const geo  = new THREE.CircleGeometry(sz.radius, 32);
     const mesh = new THREE.Mesh(geo, M.safe.clone());
@@ -238,10 +221,8 @@
     return mesh;
   });
 
-  // "SHELTER HERE" labels floating above safe zones
-  const safeZoneMeshes = safeZones.map((sz, i) => {
+  const safeZoneMeshes = safeZones.map((sz) => {
     const grp = new THREE.Group();
-    // Small arrow cone pointing down
     const cone = new THREE.Mesh(
       new THREE.ConeGeometry(0.15, 0.4, 6),
       new THREE.MeshBasicMaterial({ color: 0x4ade80 })
@@ -254,7 +235,7 @@
     return grp;
   });
 
-  // ── Debris pool ───────────────────────────────────────────────
+  // ── Debris pool init ──────────────────────────────────────────
   const debrisMats = [M.plaster, M.concrete, M.debris];
   for (let i = 0; i < 35; i++) {
     const s   = 0.07 + Math.random() * 0.25;
@@ -270,7 +251,7 @@
     debrisPool.push(mesh);
   }
 
-  // ── Pointer lock ──────────────────────────────────────────────
+  // ── Controls ──────────────────────────────────────────────────
   const euler    = new THREE.Euler(0, 0, 0, "YXZ");
   let   isLocked = false;
   const PITCH_MAX = Math.PI / 2.2;
@@ -299,7 +280,6 @@
     keys[e.code] = true;
     if (e.code === "KeyC") {
       if (isCrouching) {
-        // Only allow standing up if NOT under the table
         const p = camera.position;
         const tbl = safeZones[0];
         const dx = p.x - tbl.center.x;
@@ -311,11 +291,11 @@
       }
     }
   });
-  document.addEventListener("keyup",   e => { keys[e.code] = false; });
+  document.addEventListener("keyup", e => { keys[e.code] = false; });
 
-  // ── Movement + Collision ─────────────────────────────────────
+  // ── Movement & Collision logic ────────────────────────────────
   const SPEED  = 4.5;
-  const P_RAD  = 0.3;   // player capsule radius
+  const P_RAD  = 0.3;
   const fwd    = new THREE.Vector3();
   const rgt    = new THREE.Vector3();
   const mdir   = new THREE.Vector3();
@@ -334,18 +314,16 @@
         px += dx * push;
         pz += dz * push;
       } else if (dist === 0) {
-        // Dead centre — push out in nearest axis
         const overX = P_RAD - Math.abs(px - (c.minX + c.maxX) * 0.5);
         const overZ = P_RAD - Math.abs(pz - (c.minZ + c.maxZ) * 0.5);
         if (overX < overZ) px += (px < (c.minX+c.maxX)*0.5 ? -overX : overX);
-        else                pz += (pz < (c.minZ+c.maxZ)*0.5 ? -overZ : overZ);
+        else               pz += (pz < (c.minZ+c.maxZ)*0.5 ? -overZ : overZ);
       }
     }
     return { px, pz };
   }
 
   function updateMovement(dt) {
-    // Smooth eye height for crouch
     const targetEye = isCrouching ? EYE_CROUCH : EYE_STAND;
     currentEyeY += (targetEye - currentEyeY) * Math.min(1, dt * 12);
 
@@ -362,8 +340,6 @@
 
     if (mdir.lengthSq() > 0) {
       mdir.normalize().multiplyScalar(spd);
-
-      // Move X, resolve, then move Z, resolve (separates axes — no sticking)
       let nx = camera.position.x + mdir.x;
       let nz = camera.position.z;
       const rx = resolveColliders(nx, nz);
@@ -376,13 +352,9 @@
       camera.position.x = Math.max(-HW, Math.min(HW, nx));
       camera.position.z = Math.max(-HD, Math.min(HD, nz));
     }
-
     camera.position.y = currentEyeY;
   }
 
-  // ── Safe zone check ───────────────────────────────────────────
-  // safeZones[0] = under table  → requires crouch
-  // safeZones[1] = doorframe    → works standing or crouching
   function checkSafeZone() {
     const p = camera.position;
     return safeZones.some((sz, i) => {
@@ -391,11 +363,11 @@
       const inArea = Math.sqrt(dx*dx + dz*dz) < sz.radius;
       if (!inArea) return false;
       if (i === 0) return isCrouching;   // table: must crouch
-      return true;                        // doorframe: any stance
+      return true;                       // doorframe: any stance
     });
   }
 
-  // ── Spawn / update debris ─────────────────────────────────────
+  // ── Game Loops ────────────────────────────────────────────────
   function spawnDebris() {
     const chunk = debrisPool.find(d => !d.visible && d._fallen === false);
     if (!chunk) return;
@@ -420,7 +392,6 @@
       d.rotation.x += 1.5 * dt;
       d.rotation.z += 1.0 * dt;
 
-      // Hit player?
       if (!isHiding) {
         const dx = d.position.x - camera.position.x;
         const dz = d.position.z - camera.position.z;
@@ -429,7 +400,7 @@
           panic   = Math.min(100, panic + 10);
           d._fallen = true;
           d.position.y = 0.1;
-          flashScreen("rgba(220,30,30,0.38)", 350);
+          flashScreen("rgba(220,30,30,0.4)", 350);
         }
       }
 
@@ -440,7 +411,6 @@
     }
   }
 
-  // ── Screen flash ──────────────────────────────────────────────
   function flashScreen(color, duration) {
     const wrapper = canvas.parentElement;
     const fl = document.createElement("div");
@@ -451,14 +421,13 @@
     setTimeout(() => fl.remove(), duration + 50);
   }
 
-  // ── HUD build ─────────────────────────────────────────────────
+  // ── HUD Elements ──────────────────────────────────────────────
   let panicFill, healthFill, timerEl, statusEl, safeEl, outcomeEl;
 
   function buildHUD() {
     const wrapper = canvas.parentElement;
     if (getComputedStyle(wrapper).position === "static") wrapper.style.position = "relative";
 
-    // Hint
     const hint = document.createElement("div");
     hint.id = "game-hint";
     hint.innerHTML = `
@@ -474,7 +443,6 @@
     `;
     wrapper.appendChild(hint);
 
-    // Crosshair
     const cross = document.createElement("div");
     cross.id = "game-crosshair";
     cross.innerHTML = `<svg viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="8" stroke="rgba(255,255,255,.75)" stroke-width="1.5" stroke-linecap="round"/><line x1="12" y1="16" x2="12" y2="22" stroke="rgba(255,255,255,.75)" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="12" x2="8" y2="12" stroke="rgba(255,255,255,.75)" stroke-width="1.5" stroke-linecap="round"/><line x1="16" y1="12" x2="22" y2="12" stroke="rgba(255,255,255,.75)" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="12" r="1.2" fill="rgba(255,255,255,.6)"/></svg>`;
@@ -484,40 +452,33 @@
       cross.style.display = document.pointerLockElement === canvas ? "block" : "none";
     });
 
-    // Panic
     const pw = document.createElement("div"); pw.id = "panic-wrap";
     pw.innerHTML = `<div id="panic-label">PANIC</div><div id="panic-bar"><div id="panic-fill"></div></div>`;
     wrapper.appendChild(pw);
     panicFill = document.getElementById("panic-fill");
 
-    // Health
     const hw = document.createElement("div"); hw.id = "health-wrap";
     hw.innerHTML = `<div id="health-label">HEALTH</div><div id="health-bar"><div id="health-fill"></div></div>`;
     wrapper.appendChild(hw);
     healthFill = document.getElementById("health-fill");
 
-    // Timer
     timerEl = document.createElement("div"); timerEl.id = "game-timer";
     wrapper.appendChild(timerEl);
 
-    // Status
     statusEl = document.createElement("div"); statusEl.id = "game-status";
     statusEl.textContent = "Explore your apartment. Something feels off...";
     wrapper.appendChild(statusEl);
 
-    // Safe label
     safeEl = document.createElement("div"); safeEl.id = "safe-label";
     safeEl.textContent = "✓ SAFE — STAY HERE";
     safeEl.style.display = "none";
     wrapper.appendChild(safeEl);
 
-    // Crouch indicator
     const crouchEl = document.createElement("div"); crouchEl.id = "crouch-indicator";
     crouchEl.textContent = "▼ CROUCHING";
     crouchEl.style.display = "none";
     wrapper.appendChild(crouchEl);
 
-    // Outcome
     outcomeEl = document.createElement("div"); outcomeEl.id = "outcome-screen";
     outcomeEl.style.display = "none";
     wrapper.appendChild(outcomeEl);
@@ -535,7 +496,6 @@
 
     safeEl.style.display = (gameState === STATE.QUAKE && isHiding) ? "block" : "none";
 
-    // Crouch indicator
     const crouchEl = document.getElementById("crouch-indicator");
     if (crouchEl) crouchEl.style.display = isCrouching ? "block" : "none";
 
@@ -550,11 +510,11 @@
 
     if (gameState === STATE.QUAKE) {
       timerEl.textContent = `QUAKE: ${Math.ceil(QUAKE_DURATION - quakeTimer)}s`;
-      // Check if in table zone but not crouching
       const p = camera.position;
       const dx = p.x - safeZones[0].center.x;
       const dz = p.z - safeZones[0].center.z;
       const inTableArea = Math.sqrt(dx*dx + dz*dz) < safeZones[0].radius;
+      
       if (isHiding) {
         statusEl.textContent = "✓ Stay hidden! Wait for it to pass...";
         statusEl.style.color = "#4ade80";
@@ -614,14 +574,12 @@
 
   buildHUD();
 
-  // ── Resize ────────────────────────────────────────────────────
   window.addEventListener("resize", () => {
     renderer.setSize(canvas.clientWidth, canvas.clientHeight);
     camera.aspect = canvas.clientWidth / canvas.clientHeight;
     camera.updateProjectionMatrix();
   });
 
-  // ── Main loop ─────────────────────────────────────────────────
   let lastTime = performance.now();
 
   function animate(now) {
@@ -634,12 +592,10 @@
 
     updateMovement(dt);
 
-    // ── CALM PHASE ────────────────────────────────────────────
     if (gameState === STATE.CALM) {
       calmTimer += dt;
       panic += (48 - panic) * 0.5 * dt;
 
-      // Pre-quake micro-trembles in last 8 seconds
       if (calmTimer > CALM_DURATION - 8) {
         const strength = (calmTimer - (CALM_DURATION - 8)) / 8;
         camera.position.x += (Math.random()-0.5) * 0.004 * strength;
@@ -654,49 +610,46 @@
       }
     }
 
-    // ── QUAKE PHASE ───────────────────────────────────────────
     if (gameState === STATE.QUAKE) {
       quakeTimer += dt;
-
-      // Ramp shake up, hold, then ease near end
       const progress = quakeTimer / QUAKE_DURATION;
       const ramp     = Math.min(1, quakeTimer / 3);
       const ease     = progress > 0.8 ? 1 - (progress - 0.8) / 0.2 : 1;
       shakeIntensity  = 0.14 * ramp * ease;
 
-      // Apply shake around base position
       cameraBase.copy(camera.position);
       camera.position.x += (Math.random()-0.5) * shakeIntensity * 2.2;
       camera.position.y  = currentEyeY + (Math.random()-0.5) * shakeIntensity * 0.8;
       camera.position.z += (Math.random()-0.5) * shakeIntensity * 2.2;
-
-      // Rotate camera slightly for tilt feel
       camera.rotation.z = (Math.random()-0.5) * shakeIntensity * 0.6;
 
       isHiding = checkSafeZone();
 
-      // Panic dynamics
+      // NEW LOGIC: Drains health and spikes panic if you aren't hiding!
       if (isHiding) {
         panic = Math.max(0, panic - 20 * dt);
       } else {
-        panic = Math.min(100, panic + 16 * dt);
+        panic = Math.min(100, panic + 25 * dt); // Panic goes up much faster
+        health = Math.max(0, health - 5 * dt);  // You lose 5 health per second of exposure
+        
+        // Randomly flash the screen red slightly to indicate getting hit by small debris/dust
+        if (Math.random() < 0.08) {
+          flashScreen("rgba(220,30,30,0.15)", 100);
+        }
       }
 
-      // Debris
       debrisCooldown -= dt;
       if (debrisCooldown <= 0) {
         const rate = Math.max(0.18, 0.7 - quakeTimer * 0.015);
         debrisCooldown = rate;
         spawnDebris();
-        if (quakeTimer > 8) spawnDebris(); // double spawn mid-quake
+        if (quakeTimer > 8) spawnDebris(); 
       }
       updateDebris(dt);
 
-      // Light flicker
       ceilLight1.intensity = 1.8 + Math.sin(t * 22 + Math.random()) * 1.0 * ramp;
       ceilLight2.intensity = 1.1 + Math.sin(t * 17) * 0.6 * ramp;
 
-      // Pulse safe zone glow
       safeViz.forEach(v => {
         v.material.opacity = isHiding ? 0.35 : 0.18 + Math.sin(t*3)*0.08;
       });
@@ -709,7 +662,6 @@
         return;
       }
 
-      // Restore base pos after shake rendered
       renderer.render(scene, camera);
       camera.position.copy(cameraBase);
       camera.position.y = currentEyeY;
