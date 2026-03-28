@@ -21,7 +21,7 @@
 
   const camera = new THREE.PerspectiveCamera(72, canvas.clientWidth / canvas.clientHeight, 0.05, 100);
   camera.rotation.order = "YXZ";
-  camera.position.set(0, 1.7, 0);  // spawn in open centre of room
+  camera.position.set(0, 1.7, 0);  
 
   // ── Game state ────────────────────────────────────────────────
   const STATE = { CALM: 0, QUAKE: 1, DONE: 2 };
@@ -44,13 +44,11 @@
   let   isCrouching  = false;
   let   currentEyeY  = EYE_STAND;
 
-  // ── Safe zones: under table, in doorframe ────────────────────
   const safeZones = [
     { center: new THREE.Vector3(-2.5, 0, 0.8), radius: 1.9 },
     { center: new THREE.Vector3(3.5,  0, 5.0), radius: 1.5 },
   ];
 
-  // ── Debris pool ───────────────────────────────────────────────
   const debrisPool  = [];
   const activeDebris = [];
 
@@ -101,8 +99,9 @@
   };
 
   const colliders = [];
-  function addCollider(px, pz, hw, hd) {
-    colliders.push({ minX: px-hw, maxX: px+hw, minZ: pz-hd, maxZ: pz+hd });
+  // Added crouchPassable to allow sliding under objects like the table top
+  function addCollider(px, pz, hw, hd, crouchPassable = false) {
+    colliders.push({ minX: px-hw, maxX: px+hw, minZ: pz-hd, maxZ: pz+hd, crouchPassable });
   }
 
   function b(w, h, d, mat, px, py, pz, rx, ry, rz) {
@@ -140,7 +139,7 @@
   addCollider(-1.2, 5, 3.8, 0.15);     
   addCollider(4.7, 5, 0.3, 0.15);      
 
-  // ── Window & Doorframe ────────────────────────────────────────
+  // Window & Doorframe
   b(0.06, 1.65, 2.9, M.window,  5, 1.675, -0.5);
   b(0.14, 1.68, 0.1, M.windowFr, 5, 1.675,  0.95);
   b(0.14, 1.68, 0.1, M.windowFr, 5, 1.675, -1.95);
@@ -155,26 +154,30 @@
   // ── Furniture ─────────────────────────────────────────────────
   b(4.5, 0.02, 3.5, M.rug, -1, 0.01, 0.8);
 
-  b(3.4, 0.48, 1.0, M.sofa,    -1.5, 0.24, 3.0);
-  b(3.4, 0.9,  0.24, M.sofa,   -1.5, 0.69, 2.52);
-  b(0.24, 0.68, 1.0, M.sofa,   -3.1, 0.48, 3.0);
-  b(0.24, 0.68, 1.0, M.sofa,    0.1, 0.48, 3.0);
-  b(0.95, 0.1, 0.85, M.sofaCush,-2.5, 0.5, 3.0);
-  b(0.95, 0.1, 0.85, M.sofaCush,-1.5, 0.5, 3.0);
-  b(0.95, 0.1, 0.85, M.sofaCush,-0.5, 0.5, 3.0);
-  addCollider(-1.5, 2.95, 1.75, 0.60);
+  // Sofa (Turned 180 degrees to face the TV at Z=-4.9)
+  b(3.4, 0.48, 1.0, M.sofa,    -1.5, 0.24, 3.0);       // Seat
+  b(3.4, 0.9,  0.24, M.sofa,   -1.5, 0.69, 3.38);      // Backrest (moved to +Z)
+  b(0.24, 0.68, 1.0, M.sofa,   -3.1, 0.48, 3.0);       // Left arm
+  b(0.24, 0.68, 1.0, M.sofa,    0.1, 0.48, 3.0);       // Right arm
+  b(0.95, 0.1, 0.85, M.sofaCush,-2.5, 0.5, 2.9);       // Cushions pushed slightly forward
+  b(0.95, 0.1, 0.85, M.sofaCush,-1.5, 0.5, 2.9);
+  b(0.95, 0.1, 0.85, M.sofaCush,-0.5, 0.5, 2.9);
+  addCollider(-1.5, 3.0, 1.75, 0.60);
 
+  // Table (Now with smart collision that allows crouching)
   b(3.0, 0.1, 1.8, M.tableTop, -2.5, 1.1, 0.8);     
   b(0.1, 1.05, 0.1, M.tableLeg, -3.9, 0.525,  1.65);
   b(0.1, 1.05, 0.1, M.tableLeg, -1.1, 0.525,  1.65);
   b(0.1, 1.05, 0.1, M.tableLeg, -3.9, 0.525, -0.05);
   b(0.1, 1.05, 0.1, M.tableLeg, -1.1, 0.525, -0.05);
   
-  addCollider(-3.9, 1.65, 0.15, 0.15);
+  addCollider(-3.9, 1.65, 0.15, 0.15); // Legs block always
   addCollider(-1.1, 1.65, 0.15, 0.15);
   addCollider(-3.9, -0.05, 0.15, 0.15);
   addCollider(-1.1, -0.05, 0.15, 0.15);
+  addCollider(-2.5, 0.8, 1.5, 0.9, true); // Main table blocks standing, allows crouching
 
+  // TV stand + TV
   b(2.8, 0.5, 0.55, M.darkWood,  0, 0.25, -4.9);
   b(0.1, 0.9, 0.55, M.darkWood, -1.3, 0.7, -4.9);
   b(0.1, 0.9, 0.55, M.darkWood,  1.3, 0.7, -4.9);
@@ -182,21 +185,26 @@
   b(1.9, 1.05, 0.08, M.frame,    0, 1.65, -4.86);
   addCollider(0, -4.9, 1.45, 0.32);
 
-  const shX = -4.3, shZ = -3.5;
-  b(0.05, 2.3, 0.38, M.wood, shX-0.6, 1.15, shZ);   
-  b(0.05, 2.3, 0.38, M.wood, shX+0.6, 1.15, shZ);   
-  b(1.25, 2.3, 0.05, M.wood, shX, 1.15, shZ-0.165); 
+  // Bookshelf (Rotated 90 degrees, set flush against left wall)
+  const shX = -4.76, shZ = -3.5;
+  b(0.38, 2.3, 0.05, M.wood, shX, 1.15, shZ - 0.6);   // Side 1 (back of room)
+  b(0.38, 2.3, 0.05, M.wood, shX, 1.15, shZ + 0.6);   // Side 2 (front of room)
+  b(0.05, 2.3, 1.25, M.wood, -4.975, 1.15, shZ);      // Backboard touching the wall (-5.0)
   
   const shelfY = [0.1, 0.8, 1.5, 2.2];
-  shelfY.forEach(y => {
-    b(1.15, 0.05, 0.33, M.wood, shX, y, shZ);
-    b(0.12, 0.58, 0.3, M.book,  shX+0.2, y+0.31, shZ);
-    b(0.12, 0.62, 0.3, M.book2, shX, y+0.33, shZ);
-    b(0.12, 0.5,  0.3, M.book3, shX-0.2, y+0.27, shZ);
-    b(0.12, 0.55, 0.3, M.book,  shX-0.35, y+0.3, shZ);
+  shelfY.forEach((y, index) => {
+    b(0.33, 0.05, 1.15, M.wood, shX - 0.025, y, shZ);
+    // Remove books from the highest shelf (index 3)
+    if (index < 3) {
+      b(0.28, 0.58, 0.12, M.book,  shX - 0.025, y+0.31, shZ + 0.2);
+      b(0.28, 0.62, 0.12, M.book2, shX - 0.025, y+0.33, shZ);
+      b(0.28, 0.5,  0.12, M.book3, shX - 0.025, y+0.27, shZ - 0.2);
+      b(0.28, 0.55, 0.12, M.book,  shX - 0.025, y+0.3, shZ - 0.35);
+    }
   });
-  addCollider(shX, shZ, 0.65, 0.22); 
+  addCollider(shX, shZ, 0.22, 0.65); 
 
+  // Plant
   b(0.32, 0.42, 0.32, M.pot,  -4.4, 0.21, 2.8);
   const plantM = new THREE.Mesh(new THREE.SphereGeometry(0.48, 8, 8), M.plant);
   plantM.position.set(-4.4, 0.78, 2.8);
@@ -280,6 +288,7 @@
     keys[e.code] = true;
     if (e.code === "KeyC") {
       if (isCrouching) {
+        // Prevent standing up while underneath the table
         const p = camera.position;
         const tbl = safeZones[0];
         const dx = p.x - tbl.center.x;
@@ -304,6 +313,8 @@
 
   function resolveColliders(px, pz) {
     for (const c of colliders) {
+      if (c.crouchPassable && isCrouching) continue; // Bypass if crawling under
+
       const nearX = Math.max(c.minX, Math.min(c.maxX, px));
       const nearZ = Math.max(c.minZ, Math.min(c.maxZ, pz));
       const dx = px - nearX;
@@ -362,8 +373,8 @@
       const dz   = p.z - sz.center.z;
       const inArea = Math.sqrt(dx*dx + dz*dz) < sz.radius;
       if (!inArea) return false;
-      if (i === 0) return isCrouching;   // table: must crouch
-      return true;                       // doorframe: any stance
+      if (i === 0) return isCrouching;  
+      return true;                      
     });
   }
 
@@ -625,14 +636,12 @@
 
       isHiding = checkSafeZone();
 
-      // NEW LOGIC: Drains health and spikes panic if you aren't hiding!
       if (isHiding) {
         panic = Math.max(0, panic - 20 * dt);
       } else {
-        panic = Math.min(100, panic + 25 * dt); // Panic goes up much faster
-        health = Math.max(0, health - 5 * dt);  // You lose 5 health per second of exposure
+        panic = Math.min(100, panic + 25 * dt); 
+        health = Math.max(0, health - 5 * dt);  
         
-        // Randomly flash the screen red slightly to indicate getting hit by small debris/dust
         if (Math.random() < 0.08) {
           flashScreen("rgba(220,30,30,0.15)", 100);
         }
