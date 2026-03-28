@@ -83,6 +83,7 @@ It was built as a **static, simple, but emotionally strong** hackathon project d
 - Turn this into a real offline‑AI app that runs on phones without internet.  
 - Collect real‑world data from crises and update the quiz and simulation.  
 - Add more scenarios (floods, storms, etc.) and languages.  
+- Мaybe add an option for it to immediately recognize a situation based on the surroundings
 
 ---
 
