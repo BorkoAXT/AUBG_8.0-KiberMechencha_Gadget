@@ -1,6 +1,8 @@
 /* ============================================================
-   style.css  –  Survival Encyclopedia  |  Game Test
+   style.css  –  Survival Encyclopedia  |  Earthquake Scenario
    ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;900&display=swap');
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -8,26 +10,370 @@
   padding: 0;
 }
 
+:root {
+  --panic-red:    #ef4444;
+  --safe-green:   #4ade80;
+  --warn-amber:   #fbbf24;
+  --hud-bg:       rgba(10, 12, 10, 0.82);
+  --hud-border:   rgba(255,255,255,0.08);
+  --font-mono:    'Share Tech Mono', monospace;
+  --font-cond:    'Barlow Condensed', sans-serif;
+}
+
 html, body {
   width: 100%;
   height: 100%;
   background: #000;
   overflow: hidden;
+  font-family: var(--font-mono);
 }
 
-/* ── Game section fills the whole viewport ── */
+/* ── Game wrapper ─────────────────────────────────────────── */
 #game-section {
-  position: relative;   /* needed for HUD overlays in game.js */
+  position: relative;
   width: 100%;
   height: 100vh;
   overflow: hidden;
   background: #000;
 }
 
-/* ── Canvas fills its parent exactly ── */
 #game-canvas {
   display: block;
   width: 100%;
   height: 100%;
   cursor: none;
+}
+
+/* ── Click-to-enter hint overlay ──────────────────────────── */
+#game-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(4px);
+  color: #d1c9bb;
+  text-align: center;
+  pointer-events: none;
+  z-index: 40;
+}
+
+.gh-title {
+  font-family: var(--font-cond);
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  color: #f5f0e8;
+  text-transform: uppercase;
+}
+
+.gh-sub {
+  font-size: 1rem;
+  opacity: 0.7;
+  letter-spacing: 0.08em;
+}
+
+.gh-keys {
+  font-size: 0.82rem;
+  opacity: 0.55;
+  letter-spacing: 0.06em;
+  margin-top: 0.3rem;
+}
+
+.gh-keys span {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 4px;
+  padding: 0.1em 0.45em;
+  font-size: 0.78rem;
+}
+
+.gh-warn {
+  margin-top: 1rem;
+  font-family: var(--font-cond);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--warn-amber);
+  letter-spacing: 0.06em;
+  opacity: 0.9;
+}
+
+/* ── Crosshair ─────────────────────────────────────────────── */
+#game-crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 26px;
+  height: 26px;
+  pointer-events: none;
+  z-index: 30;
+}
+
+#game-crosshair svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Panic meter ────────────────────────────────────────────── */
+#panic-wrap {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  pointer-events: none;
+  z-index: 20;
+}
+
+#panic-label {
+  font-family: var(--font-cond);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: rgba(255,255,255,0.55);
+  text-transform: uppercase;
+}
+
+#panic-bar {
+  width: 220px;
+  height: 10px;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+#panic-fill {
+  height: 100%;
+  width: 50%;
+  border-radius: 5px;
+  background: rgb(110, 150, 20);
+  transition: width 0.2s ease, background 0.3s ease;
+}
+
+/* ── Health bar ─────────────────────────────────────────────── */
+#health-wrap {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  pointer-events: none;
+  z-index: 20;
+}
+
+#health-label {
+  font-family: var(--font-cond);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: rgba(255,255,255,0.55);
+}
+
+#health-bar {
+  width: 140px;
+  height: 10px;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+#health-fill {
+  height: 100%;
+  width: 100%;
+  border-radius: 5px;
+  background: rgb(20, 190, 40);
+  transition: width 0.25s ease, background 0.3s ease;
+}
+
+/* ── Timer ──────────────────────────────────────────────────── */
+#game-timer {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-family: var(--font-cond);
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: var(--warn-amber);
+  text-shadow: 0 0 12px rgba(251,191,36,0.6);
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* ── Status message ─────────────────────────────────────────── */
+#game-status {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-cond);
+  font-size: clamp(0.95rem, 2vw, 1.15rem);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #d1c9bb;
+  text-align: center;
+  background: var(--hud-bg);
+  border: 1px solid var(--hud-border);
+  padding: 8px 20px;
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 20;
+  max-width: 90%;
+  transition: color 0.3s ease;
+}
+
+/* ── Crouch indicator ───────────────────────────────────────── */
+#crouch-indicator {
+  position: absolute;
+  bottom: 72px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-cond);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #93c5fd;
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(147,197,253,0.3);
+  padding: 4px 14px;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 25;
+}
+
+/* ── Safe zone label ────────────────────────────────────────── */
+#safe-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -110px);
+  font-family: var(--font-cond);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--safe-green);
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(74,222,128,0.35);
+  padding: 6px 16px;
+  border-radius: 5px;
+  pointer-events: none;
+  z-index: 25;
+  animation: safePulse 1.2s ease-in-out infinite;
+}
+
+@keyframes safePulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+/* ── Flash animation ────────────────────────────────────────── */
+@keyframes flashOut {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ── Outcome screen ─────────────────────────────────────────── */
+#outcome-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.80);
+  backdrop-filter: blur(6px);
+  z-index: 80;
+}
+
+.outcome-box {
+  background: rgba(12,14,12,0.95);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: clamp(28px, 5vw, 48px) clamp(24px, 5vw, 56px);
+  max-width: 520px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.outcome-badge {
+  font-family: var(--font-cond);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  border: 1px solid;
+  border-radius: 100px;
+  padding: 4px 14px;
+  color: rgba(255,255,255,0.6);
+}
+
+.outcome-title {
+  font-family: var(--font-cond);
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+
+.outcome-body {
+  font-size: 0.88rem;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.65;
+  max-width: 380px;
+}
+
+.outcome-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding-top: 1rem;
+}
+
+.outcome-stat {
+  font-family: var(--font-cond);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.7);
+}
+
+.outcome-stat strong {
+  color: #fff;
+}
+
+.outcome-btn {
+  margin-top: 0.5rem;
+  font-family: var(--font-cond);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 10px 28px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.outcome-btn:hover {
+  background: rgba(255,255,255,0.16);
+  border-color: rgba(255,255,255,0.4);
 }
