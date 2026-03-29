@@ -877,6 +877,11 @@
             document.getElementById('main-menu').style.display = 'none';
             document.getElementById('game-wrapper').style.display = 'block';
 
+            // Request fullscreen (must be inside a user gesture — button click qualifies)
+            const el = document.documentElement;
+            if (el.requestFullscreen) el.requestFullscreen();
+            else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+
             // Resize canvas properly before scenario starts
             const canvas = document.getElementById('game-canvas');
             canvas.width = window.innerWidth;
@@ -889,8 +894,25 @@
         }
 
         function backToMenu() {
+            if (document.fullscreenElement) document.exitFullscreen();
             location.reload();
         }
+
+        // Re-fit canvas after fullscreen change (phone gains extra pixels)
+        document.addEventListener('fullscreenchange', function() {
+            const canvas = document.getElementById('game-canvas');
+            if (canvas) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+        });
+        document.addEventListener('webkitfullscreenchange', function() {
+            const canvas = document.getElementById('game-canvas');
+            if (canvas) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+        });
     </script>
 
     <!-- Mobile controls init (runs after DOM is ready) -->
