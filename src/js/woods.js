@@ -943,6 +943,17 @@
     hint.innerHTML = `<div class="gh-title">🌲 LOST IN THE WOODS</div><div class="gh-sub">Click anywhere to enter</div><div class="gh-keys"><span>WASD</span> Move &nbsp;·&nbsp;<span>Shift</span> Sprint &nbsp;·&nbsp;<span>Mouse</span> Look &nbsp;·&nbsp;<span>E</span> Interact &nbsp;·&nbsp;<span>Esc</span> Exit</div><div class="gh-warn">⚠ Night is falling. Find shelter before hypothermia sets in. Follow the distant light...</div>`;
     wrapper.appendChild(hint);
 
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+      const sub = hint.querySelector('.gh-sub');
+      if (sub) sub.textContent = 'Tap here to start';
+      hint.style.cursor = 'pointer';
+      hint.addEventListener('touchstart', function() {
+        isLocked = true;
+        hint.style.display = 'none';
+        setPaused(false);
+      }, { once: true, passive: true });
+    }
+
     const cross = document.createElement("div"); cross.id = "game-crosshair";
     cross.innerHTML = `<svg viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="8" stroke="rgba(255,255,255,.75)" stroke-width="1.5" stroke-linecap="round"/><line x1="12" y1="16" x2="12" y2="22" stroke="rgba(255,255,255,.75)" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="12" x2="8" y2="12" stroke="rgba(255,255,255,.75)" stroke-width="1.5" stroke-linecap="round"/><line x1="16" y1="12" x2="22" y2="12" stroke="rgba(255,255,255,.75)" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="12" r="1.2" fill="rgba(255,255,255,.6)"/></svg>`;
     cross.style.display = "none"; wrapper.appendChild(cross);
