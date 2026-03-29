@@ -1,80 +1,72 @@
 // src/js/database.js
+// Handles the user's local assessment profile chart only.
+// All real-world data charts are rendered inline in database.html.
 
-document.addEventListener('DOMContentLoaded', () => {
-    
-    Chart.defaults.color = '#a1a1aa'; // zinc-400 text
+document.addEventListener('DOMContentLoaded', function () {
+
+    Chart.defaults.color = '#71717a';
     Chart.defaults.font.family = "'Space Mono', monospace";
-    
-    // --- 2. Load User Data from Local Storage ---
-    const rawData = localStorage.getItem('survival_pre_quiz_results');
-    let calmScore = 0;
-    let panicScore = 3; // default fallback if they haven't taken the quiz
-    
-    const userStatsText = document.getElementById('user-stats-text');
+
+    var BORDER = '#09090b';
+    var TIP = {
+        backgroundColor: '#18181b',
+        borderColor: '#3f3f46',
+        borderWidth: 1,
+        titleColor: '#f59e0b',
+        bodyColor: '#a1a1aa',
+        padding: 10,
+        cornerRadius: 2
+    };
+
+    var rawData     = localStorage.getItem('survival_pre_quiz_results');
+    var calmScore   = 5;
+    var panicScore  = 5;
+    var statsEl     = document.getElementById('user-stats-text');
 
     if (rawData) {
-        const userData = JSON.parse(rawData);
-        calmScore = userData.calmScore;
-        panicScore = userData.panicLevel;
-        userStatsText.innerHTML = `CALM: ${calmScore} // PANIC: ${panicScore}<br/>Data pulled from Local Matrix`;
+        try {
+            var userData = JSON.parse(rawData);
+            calmScore  = userData.calmScore  || 5;
+            panicScore = userData.panicLevel || 5;
+            if (statsEl) {
+                statsEl.innerHTML = 'CALM: ' + calmScore + ' &nbsp;|&nbsp; PANIC: ' + panicScore + '<br/><span class="text-zinc-600">Pulled from local storage</span>';
+            }
+        } catch (e) {
+            if (statsEl) statsEl.innerHTML = 'Data parse error. <a href="quiz.html" class="text-amber-500 underline">Retake quiz</a>';
+        }
     } else {
-        userStatsText.innerHTML = `NO LOCAL DATA FOUND.<br/><a href="quiz.html" class="text-amber-500 underline">Take Pre-Assessment</a>`;
+        if (statsEl) {
+            statsEl.innerHTML = 'No local data found.<br/><a href="quiz.html" class="text-amber-500 underline">Take the readiness quiz first</a>';
+        }
     }
 
-    // --- 3. Render User Stats Chart ---
-    const ctxUser = document.getElementById('userChart').getContext('2d');
-    new Chart(ctxUser, {
-        type: 'doughnut',
-        data: {
-            labels: ['Calm/Logic', 'Panic/Instinct'],
-            datasets: [{
-                data: [calmScore, panicScore],
-                backgroundColor: ['#f59e0b', '#ef4444'], // Amber-500, Red-500
-                borderColor: '#18181b', // Zinc-900 to match background
-                borderWidth: 2,
-                hoverOffset: 4
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: true }
-    });
-
-    // --- 4. Render Global Survival Rate Chart ---
-    const ctxGlobal = document.getElementById('globalSurvivalChart').getContext('2d');
-    new Chart(ctxGlobal, {
-        type: 'doughnut',
-        data: {
-            labels: ['Survived (>72hrs)', 'Failed (<72hrs)'],
-            datasets: [{
-                data: [32, 68], // Mock Global Stats
-                backgroundColor: ['#22c55e', '#52525b'], // Green-500, Zinc-600
-                borderColor: '#18181b',
-                borderWidth: 2,
-                hoverOffset: 4
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: true }
-    });
-
-    // --- 5. Render Primary Failure Causes Chart ---
-    const ctxFailure = document.getElementById('failureCausesChart').getContext('2d');
-    new Chart(ctxFailure, {
-        type: 'pie',
-        data: {
-            labels: ['Dehydration', 'Hypothermia', 'Contaminated Water', 'Violence/Panic'],
-            datasets: [{
-                data: [15, 25, 20, 40], // Mock stats showing Panic is the real killer
-                backgroundColor: ['#3b82f6', '#06b6d4', '#84cc16', '#ef4444'], 
-                borderColor: '#18181b',
-                borderWidth: 2,
-                hoverOffset: 4
-            }]
-        },
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: true,
-            plugins: {
-                legend: { position: 'bottom' }
+    var ctxUser = document.getElementById('userChart');
+    if (ctxUser) {
+        new Chart(ctxUser, {
+            type: 'doughnut',
+            data: {
+                labels: ['Calm / Logic', 'Panic / Instinct'],
+                datasets: [{
+                    data: [calmScore, panicScore],
+                    backgroundColor: ['#f59e0b', '#ef4444'],
+                    borderColor: BORDER,
+                    borderWidth: 2,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { padding: 14, font: { size: 9 }, color: '#71717a', boxWidth: 10 }
+                    },
+                    tooltip: TIP
+                }
             }
-        }
-    });
+        });
+    }
+
 });

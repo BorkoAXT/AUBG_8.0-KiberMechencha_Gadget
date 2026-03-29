@@ -1,92 +1,141 @@
-# AUBG_8.0 - KiberMechencha Gadget
+# CivExit — Offline Crisis Simulation Engine
 
-**A survival‑tool prototype that turns panic into calm during global crises.**
+> A high-fidelity survival simulation built to train calm, sequential decision-making under total blackout and urban collapse scenarios.
 
-This project was built for the **AUBG 8.0 Hackathon** with the theme “Survival”.  
-It explores what happens if a **total world blackout** occurs and how people who rely on technology react and survive.
-
-## Overview
-
-The website presents a **story‑driven survival experience** centered around a fictional gadget called the **“KiberMechencha Gadget”** – an offline AI survival encyclopedia.
-
-Users go through three main parts:
-1. **Intro page** – explains what the gadget does and why it helps you survive.
-2. **Quiz** – a short survival‑knowledge quiz about earthquakes, blackouts, and basic skills.
-3. **Statistics / Database page** – shows how different people answered the quiz and highlights common mistakes.
-4. **Simulation** – an interactive survival game where users experience life before and after the blackout, using the gadget to make calm, correct choices.
-
-## Tech stack
-
-- **Frontend:** HTML, CSS, Tailwind CSS, vanilla JavaScript  
-- **Static deployment:** GitHub Pages
-- **Fake “AI”**: Canned‑answer knowledge base (JSON) + simple keyword matching  
-- **Visuals:** Interactive UI elements, progress bars, charts, and game‑like choices  
-
-## Features
-
-- **Survival quiz**  
-  - Short set of scenario‑based questions (e.g., earthquakes, blackouts, basic survival skills).  
-  - Immediate feedback per question and an overall survival score.  
-
-- **Statistics page**  
-  - Shows how people answered questions (e.g., “panic vs calm” choices).  
-  - Visual stats (bars, percentages) to highlight common mistakes.  
-
-- **Interactive simulation**  
-  - A narrative‑driven game where users:
-    - Experience the blackout in the city.  
-    - Escape to the forest.  
-    - Use the gadget to make correct survival choices.  
-
-- **“Offline survival” branding**  
-  - The gadget is shown as an **offline‑mode tool** that works without internet, emphasizing the “survival with no panic” theme.  
-
-## How to run locally
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/<your-username>/AUBG_8.0-KiberMechencha_Gadget.git
-   cd AUBG_8.0-KiberMechencha_Gadget
-   ```
-
-2. Open `index.html` in your browser (no build required) or start a simple local server:
-   ```bash
-   npx serve
-   ```
-
-## How to use the website
-
-1. **Intro page**  
-   - Learn what the KiberMechencha Gadget does.  
-
-2. **Quiz**  
-   - Answer survival‑focused questions.  
-   - See your score and get feedback.  
-
-3. **Statistics page**  
-   - See how your choices compare to others.  
-   - Discover common “panic” vs “calm” mistakes.  
-
-4. **Simulation**  
-   - Play through the blackout‑survival story.  
-   - Try to survive using the gadget’s guidance.  
-
-## Why this project exists
-
-If a total blackout happens, most people who rely on apps and technology will panic and not know how to survive.  
-This project shows how a simple **offline survival‑guide gadget** can reduce panic and give step‑by‑step, calm guidance.
-
-It was built as a **static, simple, but emotionally strong** hackathon project during **48 hours**.
-
-## Future ideas
-
-- Turn this into a real offline‑AI app that runs on phones without internet.  
-- Collect real‑world data from crises and update the quiz and simulation.  
-- Add more scenarios (floods, storms, etc.) and languages.  
-- Мaybe add an option for it to immediately recognize a situation based on the surroundings
+Built for the **AUBG 8.0 Hackathon** — Survival Category.
 
 ---
 
-**Made by**  
-KiberMechencha Team  
-AUBG 8.0 Hackathon – Survival Theme
+## What is CivExit?
+
+Most people have never practiced what to do when infrastructure collapses. CivExit fills that gap with a browser-based simulation that puts you in the middle of a real disaster — with real consequences for every choice you make.
+
+You pick a scenario (earthquake, fire, or wilderness evacuation), manage survival stats in real time, answer embedded knowledge checkpoints, and get a debrief on what you did right and what got you killed. The goal is not just to survive — it's to learn *why* certain decisions work.
+
+---
+
+## Scenarios
+
+| Scenario | Setting | Key Hazards |
+|---|---|---|
+| Earthquake | Urban collapse | Aftershocks, structural failure, gas leaks |
+| Fire | Building evacuation | Smoke inhalation, panic spread, blocked exits |
+| Woods | Wilderness survival | Exposure, dehydration, navigation failure |
+
+Each scenario has its own hazard array, event sequencing, and decision tree.
+
+---
+
+## Core Systems
+
+**Decision Engine** — Every action updates health, stamina, oxygen, and panic in real time. Decisions compound; a bad call early makes the next one harder.
+
+**Quiz Checkpoints** — Knowledge prompts embedded mid-simulation. Getting them wrong costs you stats. Getting them right unlocks hints for future runs.
+
+**Analytics Dashboard** — Tracks panic vs. calm ratios, success rates, and common failure points across all sessions via Supabase. Persists a session leaderboard in local storage.
+
+**Modular Scenario Engine** — New disaster scenarios can be added by dropping a new JS module into `src/js/` and registering it in the config.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | HTML, Tailwind CSS, Vanilla JavaScript |
+| Fonts | Outfit + Space Mono (Google Fonts) |
+| Backend / DB | Supabase (PostgreSQL, REST API) |
+| Build | Tailwind CLI (`npm run build`) |
+| Deployment | Render (Static Site) / GitHub Pages |
+
+No frameworks. No bundler required for the simulation itself — just a static file server.
+
+---
+
+## Project Structure
+
+```
+├── index.html              # Landing page
+├── game.html               # Scenario selection + simulation engine
+├── quiz.html               # Standalone quiz page
+├── database.html           # Analytics dashboard
+├── admin-migrate.html      # Admin data migration utility
+├── supabase-client.js      # Supabase client initialization
+├── src/
+│   ├── js/
+│   │   ├── config.js       # Environment config (secrets — gitignored)
+│   │   ├── config.example.js  # Template for local setup
+│   │   ├── main.js         # Core simulation loop
+│   │   ├── earthquake.js   # Earthquake scenario logic
+│   │   ├── fire.js         # Fire scenario logic
+│   │   ├── woods.js        # Wilderness scenario logic
+│   │   ├── quiz.js         # Quiz engine
+│   │   ├── database.js     # Supabase read/write helpers
+│   │   └── ui.js           # HUD updates, animations, DOM utilities
+│   ├── css/
+│   │   └── tailwind-input.css
+│   └── assets/
+│       ├── data/
+│       │   └── survival.json   # Simulation parameter data
+│       └── images/             # Icons, backgrounds, favicon
+├── style.css               # Compiled Tailwind output
+├── tailwind.config.js
+└── package.json
+```
+
+---
+
+## Running Locally
+
+**Prerequisites:** Node.js (for Tailwind build) and a Supabase project.
+
+```bash
+git clone https://github.com/BorkoAXT/AUBG_8.0-KiberMechencha_CivExit.git
+cd AUBG_8.0-KiberMechencha_CivExit
+```
+
+Copy the config template and fill in your Supabase credentials:
+
+```bash
+cp src/js/config.example.js src/js/config.js
+# Edit config.js with your SUPABASE_URL and SUPABASE_KEY
+```
+
+Install dependencies and build Tailwind:
+
+```bash
+npm install
+npm run build
+```
+
+Serve the static files:
+
+```bash
+npx serve
+# or
+python3 -m http.server 5500
+```
+
+Open `http://127.0.0.1:5500/`.
+
+For active development with live Tailwind rebuilds:
+
+```bash
+npm run dev
+```
+
+---
+
+## Deploying to Render
+
+1. Create a **Static Site** web service in Render and connect your GitHub repo.
+2. Set **Build Command:** `npm install && npm run build`
+3. Set **Publish Directory:** `/`
+4. Add environment variables for your Supabase credentials in the Render dashboard.
+5. Deploy — Render auto-deploys on every push to `main`.
+
+---
+
+## License
+
+[GPL-3.0](LICENSE)

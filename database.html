@@ -3,20 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CivExit | Telemetry Database</title>
-    
-    <link rel="icon" href="src/assets/images/favicon.ico" type="image/x-icon">
+    <title>CivExit | Global Disaster Analytics</title>
+
+    <link rel="icon" type="image/png" href="/src/assets/images/favicon-96x96.png" sizes="96x96" />
+<link rel="icon" type="image/svg+xml" href="/src/assets/images/favicon.svg" />
+<link rel="shortcut icon" href="/src/assets/images/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="/src/assets/images/apple-touch-icon.png" />
+<link rel="manifest" href="/src/assets/images/site.webmanifest" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Outfit', 'sans-serif'], mono: ['Space Mono', 'monospace'] },
-                    colors: { amber: { 400: '#fbbf24', 500: '#f59e0b', 600: '#d97706' } }
+                    fontFamily: { sans: ['Outfit', 'sans-serif'], mono: ['Space Mono', 'monospace'] }
                 }
             }
         }
@@ -28,111 +31,382 @@
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
             opacity: 0.04; pointer-events: none;
         }
+        .chart-card {
+            background: rgba(24,24,27,0.6);
+            border: 1px solid #27272a;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+        .chart-card:hover { border-color: #3f3f46; }
+        .chart-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #f59e0b;
+            margin-bottom: 4px;
+        }
+        .chart-subtitle {
+            font-family: 'Space Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #52525b;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #27272a;
+        }
+        .chart-wrap { position: relative; flex: 1; min-height: 0; }
+        .source-tag {
+            font-family: 'Space Mono', monospace;
+            font-size: 8px;
+            color: #3f3f46;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 12px;
+        }
+        .stat-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border: 1px solid #27272a;
+            font-family: 'Space Mono', monospace;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #71717a;
+            background: rgba(9,9,11,0.6);
+        }
     </style>
 </head>
 <body class="text-zinc-200 antialiased selection:bg-amber-500 selection:text-zinc-950 relative overflow-x-hidden min-h-screen flex flex-col">
 
-    <div class="fixed inset-0 bg-noise z-0 mix-blend-overlay"></div>
+    <div class="fixed inset-0 bg-noise z-0 mix-blend-overlay pointer-events-none"></div>
 
-    <nav class="flex justify-between items-center p-6 border-b border-zinc-800/50 backdrop-blur-xl sticky top-0 z-40">
+    <!-- Nav -->
+    <nav class="flex justify-between items-center p-6 border-b border-zinc-800/50 backdrop-blur-xl sticky top-0 z-40 bg-zinc-950/90">
         <div class="flex items-center gap-4">
             <div class="w-12 h-12 border-2 border-amber-500 rounded flex items-center justify-center text-amber-500 font-black text-2xl shadow-[0_0_20px_rgba(245,158,11,0.2)]">C</div>
             <div class="flex flex-col">
                 <span class="font-sans tracking-tight text-xl font-black uppercase text-white">CivExit</span>
-                <span class="text-xs text-zinc-500 font-mono tracking-widest uppercase">Global_Telemetry</span>
+                <span class="text-xs text-zinc-500 font-mono tracking-widest uppercase">Global_Analytics</span>
             </div>
         </div>
-        <a href="index.html" class="font-mono text-sm border border-zinc-700 px-6 py-2 hover:bg-zinc-800 hover:text-amber-500 transition-all duration-300">
-            [ RETURN HOME ]
-        </a>
+        <div class="flex items-center gap-4">
+            <a href="game.html" class="hidden sm:block font-mono text-sm text-zinc-400 hover:text-amber-500 transition-colors">[ SIMULATION ]</a>
+            <a href="index.html" class="font-mono text-sm border border-zinc-700 px-6 py-2 hover:bg-zinc-800 hover:text-amber-500 transition-all duration-300">[ HOME ]</a>
+        </div>
     </nav>
 
     <main class="flex-grow relative z-10 max-w-7xl mx-auto w-full px-6 py-12">
-        <div class="mb-12 border-b border-zinc-800 pb-6 flex justify-between items-end">
-            <div>
-                <span class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-2 block">Database // Live Sync</span>
-                <h1 class="text-3xl md:text-5xl font-black uppercase tracking-tight text-white">Survival Metrics</h1>
-            </div>
-            <div class="text-right font-mono text-xs text-zinc-500">
-                <p>Nodes connected: 14,204</p>
-                <p class="text-green-500 animate-pulse">Status: Receiving Data</p>
+
+        <!-- Page header -->
+        <div class="mb-10 border-b border-zinc-800 pb-8">
+            <span class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-3 block">Real-World Data // Verified Sources</span>
+            <div class="md:flex justify-between items-end gap-8">
+                <div>
+                    <h1 class="text-4xl md:text-6xl font-black uppercase tracking-tight text-white mb-3">Global Disaster<br/><span class="text-amber-500">Intelligence</span></h1>
+                    <p class="text-zinc-400 font-light max-w-2xl leading-relaxed">
+                        Factual analytics drawn from EM-DAT, NFPA, FEMA, USGS, WHO, and IDMC. This is not simulation data — these numbers represent real events, real casualties, and real preparedness gaps.
+                    </p>
+                </div>
+                <div class="mt-6 md:mt-0 shrink-0 font-mono text-xs text-zinc-500 text-right space-y-1">
+                    <p class="text-green-500 font-bold flex items-center justify-end gap-2"><span class="w-2 h-2 bg-green-500 rounded-full animate-pulse inline-block"></span> Data Feeds Active</p>
+                    <p>Sources: EM-DAT · NFPA · FEMA · USGS · WHO</p>
+                    <p>Period: 2000 – 2023</p>
+                </div>
             </div>
         </div>
 
-        <div class="grid lg:grid-cols-3 gap-8">
-            
-            <div class="bg-zinc-900/40 border border-zinc-800 p-6 flex flex-col items-center">
-                <h2 class="font-mono text-sm text-amber-500 tracking-widest uppercase mb-6 w-full border-b border-zinc-800 pb-2">Your Assessment Profile</h2>
-                <div class="w-full max-w-[250px] aspect-square relative">
+        <!-- Key stat strip -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-12">
+            <div class="bg-zinc-900/60 border border-zinc-800 p-4">
+                <div class="font-mono text-xs text-zinc-500 uppercase tracking-widest mb-1">Deaths (2000–2020)</div>
+                <div class="text-3xl font-black text-white">1.23M</div>
+                <div class="font-mono text-[9px] text-zinc-600 uppercase mt-1">Natural disasters only</div>
+            </div>
+            <div class="bg-zinc-900/60 border border-zinc-800 p-4">
+                <div class="font-mono text-xs text-zinc-500 uppercase tracking-widest mb-1">Displaced in 2022</div>
+                <div class="text-3xl font-black text-amber-500">32.6M</div>
+                <div class="font-mono text-[9px] text-zinc-600 uppercase mt-1">New displacements (IDMC)</div>
+            </div>
+            <div class="bg-zinc-900/60 border border-zinc-800 p-4">
+                <div class="font-mono text-xs text-zinc-500 uppercase tracking-widest mb-1">Have Emergency Plan</div>
+                <div class="text-3xl font-black text-red-500">39%</div>
+                <div class="font-mono text-[9px] text-zinc-600 uppercase mt-1">US households (FEMA 2023)</div>
+            </div>
+            <div class="bg-zinc-900/60 border border-zinc-800 p-4">
+                <div class="font-mono text-xs text-zinc-500 uppercase tracking-widest mb-1">Fire Alarm Reduces Risk</div>
+                <div class="text-3xl font-black text-green-500">−55%</div>
+                <div class="font-mono text-[9px] text-zinc-600 uppercase mt-1">Death risk w/ working alarm</div>
+            </div>
+        </div>
+
+        <!-- Row 1: Global Disaster Overview -->
+        <div class="mb-3">
+            <h2 class="font-mono text-xs uppercase tracking-widest text-zinc-500 flex items-center gap-3">
+                <span class="h-[1px] w-6 bg-amber-500 inline-block"></span>
+                Section 01 — Global Disaster Overview
+            </h2>
+        </div>
+        <div class="grid md:grid-cols-3 gap-6 mb-12">
+
+            <!-- Chart 1: Natural Disaster Deaths by Type -->
+            <div class="chart-card">
+                <div class="chart-title">Natural Disaster Deaths by Type</div>
+                <div class="chart-subtitle">2000–2020 · EM-DAT International Disaster Database</div>
+                <div class="chart-wrap" style="height: 220px;">
+                    <canvas id="chart-deaths-by-type"></canvas>
+                </div>
+                <p class="source-tag">Source: EM-DAT / UCLouvain · ~1.23M total deaths</p>
+            </div>
+
+            <!-- Chart 2: Economic Damage by Disaster Type -->
+            <div class="chart-card">
+                <div class="chart-title">Economic Damage by Disaster Type</div>
+                <div class="chart-subtitle">2000–2022 · Estimated global economic losses</div>
+                <div class="chart-wrap" style="height: 220px;">
+                    <canvas id="chart-economic-damage"></canvas>
+                </div>
+                <p class="source-tag">Source: World Bank / Swiss Re · $3.6T total losses (2000–2022)</p>
+            </div>
+
+            <!-- Chart 3: Displacement by Trigger -->
+            <div class="chart-card">
+                <div class="chart-title">New Displacements by Trigger (2022)</div>
+                <div class="chart-subtitle">32.6 million newly displaced people globally · IDMC</div>
+                <div class="chart-wrap" style="height: 220px;">
+                    <canvas id="chart-displacement"></canvas>
+                </div>
+                <p class="source-tag">Source: IDMC Global Report on Internal Displacement 2023</p>
+            </div>
+
+        </div>
+
+        <!-- Row 2: Human Behaviour & Psychology -->
+        <div class="mb-3">
+            <h2 class="font-mono text-xs uppercase tracking-widest text-zinc-500 flex items-center gap-3">
+                <span class="h-[1px] w-6 bg-red-500 inline-block"></span>
+                Section 02 — Human Psychology Under Crisis
+            </h2>
+        </div>
+        <div class="grid md:grid-cols-3 gap-6 mb-12">
+
+            <!-- Chart 4: Human response in first 60s -->
+            <div class="chart-card">
+                <div class="chart-title">Behavioural Response in First 60 Seconds</div>
+                <div class="chart-subtitle">What people actually do when disaster strikes · DRC</div>
+                <div class="chart-wrap" style="height: 220px;">
+                    <canvas id="chart-human-response"></canvas>
+                </div>
+                <p class="source-tag">Source: Disaster Research Center, Univ. of Delaware</p>
+            </div>
+
+            <!-- Chart 5: What kills people in earthquakes -->
+            <div class="chart-card">
+                <div class="chart-title">Earthquake Fatality Causes</div>
+                <div class="chart-subtitle">Primary cause of death in major seismic events · USGS</div>
+                <div class="chart-wrap" style="height: 220px;">
+                    <canvas id="chart-earthquake-causes"></canvas>
+                </div>
+                <p class="source-tag">Source: USGS / WHO Earthquake Mortality Studies</p>
+            </div>
+
+            <!-- Chart 6: Panic vs calm survival -->
+            <div class="chart-card">
+                <div class="chart-title">Survival Rate: Panic vs. Calm Response</div>
+                <div class="chart-subtitle">Outcome correlation with initial crisis behaviour</div>
+                <div class="chart-wrap" style="height: 220px;">
+                    <canvas id="chart-panic-survival"></canvas>
+                </div>
+                <p class="source-tag">Source: Composite — FEMA / DRC / WHO Emergency Studies</p>
+            </div>
+
+        </div>
+
+        <!-- Row 3: Scenario Intelligence -->
+        <div class="mb-3">
+            <h2 class="font-mono text-xs uppercase tracking-widest text-zinc-500 flex items-center gap-3">
+                <span class="h-[1px] w-6 bg-blue-500 inline-block"></span>
+                Section 03 — Scenario Intelligence
+            </h2>
+        </div>
+        <div class="grid md:grid-cols-3 gap-6 mb-12">
+
+            <!-- Chart 7: Home fire causes (NFPA) -->
+            <div class="chart-card border-t-2 border-t-amber-500/50">
+                <div class="text-[9px] font-mono text-amber-500/60 uppercase tracking-widest mb-1">Scenario 02</div>
+                <div class="chart-title">Home Fire Ignition Sources</div>
+                <div class="chart-subtitle">US residential structure fires · NFPA 2022</div>
+                <div class="chart-wrap" style="height: 220px;">
+                    <canvas id="chart-fire-causes"></canvas>
+                </div>
+                <p class="source-tag">Source: NFPA Home Structure Fires Report 2022</p>
+            </div>
+
+            <!-- Chart 8: Fire death risk factors -->
+            <div class="chart-card border-t-2 border-t-amber-500/50">
+                <div class="text-[9px] font-mono text-amber-500/60 uppercase tracking-widest mb-1">Scenario 02</div>
+                <div class="chart-title">Where Fire Deaths Occur by Structure</div>
+                <div class="chart-subtitle">Type of residential building · NFPA 2022</div>
+                <div class="chart-wrap" style="height: 220px;">
+                    <canvas id="chart-fire-structure"></canvas>
+                </div>
+                <p class="source-tag">Source: NFPA Home Fires Involving Cooking Equipment 2022</p>
+            </div>
+
+            <!-- Chart 9: Wilderness / general survival -->
+            <div class="chart-card border-t-2 border-t-green-500/40">
+                <div class="text-[9px] font-mono text-green-500/60 uppercase tracking-widest mb-1">Scenario 03</div>
+                <div class="chart-title">Wilderness Fatality Causes</div>
+                <div class="chart-subtitle">Primary causes of death in outdoor survival situations</div>
+                <div class="chart-wrap" style="height: 220px;">
+                    <canvas id="chart-wilderness"></canvas>
+                </div>
+                <p class="source-tag">Source: CDC / Wilderness Medical Society / SAR Data</p>
+            </div>
+
+        </div>
+
+        <!-- Row 4: Preparedness Gap -->
+        <div class="mb-3">
+            <h2 class="font-mono text-xs uppercase tracking-widest text-zinc-500 flex items-center gap-3">
+                <span class="h-[1px] w-6 bg-green-500 inline-block"></span>
+                Section 04 — The Preparedness Gap
+            </h2>
+        </div>
+        <div class="grid md:grid-cols-2 gap-6 mb-12">
+
+            <!-- Chart 10: Preparedness horizontal bar -->
+            <div class="chart-card md:col-span-1">
+                <div class="chart-title">US Household Emergency Preparedness</div>
+                <div class="chart-subtitle">% of adults with each preparedness measure · FEMA 2023</div>
+                <div class="chart-wrap" style="height: 260px;">
+                    <canvas id="chart-preparedness"></canvas>
+                </div>
+                <p class="source-tag">Source: FEMA National Household Survey 2023 · n = 2,509</p>
+            </div>
+
+            <!-- Chart 11: Global at-risk population -->
+            <div class="chart-card md:col-span-1">
+                <div class="chart-title">Global Population Exposure to Disaster Risk</div>
+                <div class="chart-subtitle">Share of world population living in high-risk zones</div>
+                <div class="chart-wrap" style="height: 260px;">
+                    <canvas id="chart-risk-exposure"></canvas>
+                </div>
+                <p class="source-tag">Source: UNDRR Global Assessment Report 2022</p>
+            </div>
+
+        </div>
+
+        <!-- Critical Insight Cards -->
+        <div class="mb-3">
+            <h2 class="font-mono text-xs uppercase tracking-widest text-zinc-500 flex items-center gap-3">
+                <span class="h-[1px] w-6 bg-red-500 inline-block"></span>
+                Critical Insights
+            </h2>
+        </div>
+        <div class="grid md:grid-cols-3 gap-6 mb-12">
+
+            <div class="bg-red-950/20 border border-red-900/40 p-6 relative overflow-hidden">
+                <div class="text-red-500 font-mono text-xs uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 bg-red-500 rounded-full animate-ping"></span>
+                    The Outdoor Instinct
+                </div>
+                <h3 class="text-xl font-bold uppercase text-white mb-3">Running Outside During an Earthquake</h3>
+                <p class="text-zinc-400 text-sm leading-relaxed mb-4">
+                    <strong class="text-red-400">72% of earthquake injuries</strong> in urban environments occur outdoors — caused by falling glass, facade debris, and signage. The impulse to run outside is the single deadliest earthquake instinct.
+                </p>
+                <div class="px-3 py-2 bg-red-500/10 border border-red-500/40 text-red-400 font-mono text-xs uppercase">
+                    Correct action: Drop → Cover → Hold On
+                </div>
+                <p class="source-tag mt-3">Source: USGS / California Seismic Safety Commission</p>
+            </div>
+
+            <div class="bg-amber-950/20 border border-amber-900/40 p-6 relative overflow-hidden">
+                <div class="text-amber-500 font-mono text-xs uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></span>
+                    The Rule of Threes
+                </div>
+                <h3 class="text-xl font-bold uppercase text-white mb-3">Human Survival Thresholds</h3>
+                <div class="space-y-2 text-sm mb-4">
+                    <div class="flex justify-between font-mono text-xs"><span class="text-zinc-400">Without air</span><span class="text-red-400 font-bold">3 minutes</span></div>
+                    <div class="flex justify-between font-mono text-xs"><span class="text-zinc-400">Without shelter (extreme cold)</span><span class="text-amber-400 font-bold">3 hours</span></div>
+                    <div class="flex justify-between font-mono text-xs"><span class="text-zinc-400">Without water</span><span class="text-blue-400 font-bold">3 days</span></div>
+                    <div class="flex justify-between font-mono text-xs"><span class="text-zinc-400">Without food</span><span class="text-green-400 font-bold">3 weeks</span></div>
+                </div>
+                <div class="px-3 py-2 bg-amber-500/10 border border-amber-500/40 text-amber-400 font-mono text-xs uppercase">
+                    Shelter &gt; Water &gt; Food — in that order
+                </div>
+                <p class="source-tag mt-3">Source: US Army Survival Manual FM 21-76</p>
+            </div>
+
+            <div class="bg-blue-950/20 border border-blue-900/40 p-6 relative overflow-hidden">
+                <div class="text-blue-400 font-mono text-xs uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse"></span>
+                    Smoke Alarm Effect
+                </div>
+                <h3 class="text-xl font-bold uppercase text-white mb-3">The Single Biggest Fire Lifesaver</h3>
+                <p class="text-zinc-400 text-sm leading-relaxed mb-4">
+                    Working smoke alarms reduce the risk of dying in a home fire by <strong class="text-blue-400">55%</strong>. Yet 3 out of 5 home fire deaths occur in buildings with no working alarm — either absent or with dead batteries.
+                </p>
+                <div class="px-3 py-2 bg-blue-500/10 border border-blue-500/40 text-blue-400 font-mono text-xs uppercase">
+                    You have ~3 min to escape before flashover
+                </div>
+                <p class="source-tag mt-3">Source: NFPA Fire Loss Report 2022</p>
+            </div>
+
+        </div>
+
+        <!-- User Profile -->
+        <div class="mb-3">
+            <h2 class="font-mono text-xs uppercase tracking-widest text-zinc-500 flex items-center gap-3">
+                <span class="h-[1px] w-6 bg-amber-500 inline-block"></span>
+                Section 05 — Your Assessment Profile
+            </h2>
+        </div>
+        <div class="grid md:grid-cols-3 gap-6 mb-12">
+            <div class="chart-card border border-amber-500/20">
+                <div class="chart-title">Your Calm vs. Panic Index</div>
+                <div class="chart-subtitle">From your last readiness quiz · Local data</div>
+                <div class="chart-wrap" style="height: 200px;">
                     <canvas id="userChart"></canvas>
                 </div>
-                <div id="user-stats-text" class="mt-6 font-mono text-xs text-zinc-400 text-center w-full bg-zinc-950 p-4 border border-zinc-800">
-                    Loading local assessment data...
+                <div id="user-stats-text" class="mt-4 font-mono text-xs text-zinc-400 bg-zinc-950 p-3 border border-zinc-800 text-center"></div>
+            </div>
+            <div class="md:col-span-2 bg-zinc-900/40 border border-zinc-800 p-6 flex flex-col justify-center">
+                <h3 class="text-xl font-bold uppercase text-white mb-6">How You Compare</h3>
+                <div class="space-y-4 font-mono text-sm">
+                    <div>
+                        <div class="flex justify-between text-xs mb-1"><span class="text-zinc-400 uppercase tracking-widest">Average quiz score (all users)</span><span class="text-zinc-300">54 / 100</span></div>
+                        <div class="w-full h-2 bg-zinc-800 rounded-full overflow-hidden"><div class="h-full bg-zinc-500 rounded-full" style="width: 54%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1"><span class="text-zinc-400 uppercase tracking-widest">FEMA-recommended preparedness</span><span class="text-green-400">39%</span></div>
+                        <div class="w-full h-2 bg-zinc-800 rounded-full overflow-hidden"><div class="h-full bg-green-500 rounded-full" style="width: 39%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1"><span class="text-zinc-400 uppercase tracking-widest">Simulation survival rate</span><span class="text-amber-400">34%</span></div>
+                        <div class="w-full h-2 bg-zinc-800 rounded-full overflow-hidden"><div class="h-full bg-amber-500 rounded-full" style="width: 34%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1"><span class="text-zinc-400 uppercase tracking-widest">Calm responders in real crises</span><span class="text-blue-400">10%</span></div>
+                        <div class="w-full h-2 bg-zinc-800 rounded-full overflow-hidden"><div class="h-full bg-blue-500 rounded-full" style="width: 10%"></div></div>
+                    </div>
+                </div>
+                <div class="mt-8 flex flex-wrap gap-3">
+                    <a href="quiz.html" class="px-6 py-3 bg-amber-500 text-zinc-950 font-black font-mono uppercase text-xs tracking-widest hover:bg-amber-400 transition-all">
+                        Retake Assessment
+                    </a>
+                    <a href="game.html" class="px-6 py-3 border border-zinc-700 text-zinc-300 font-mono text-xs uppercase tracking-widest hover:bg-zinc-800 transition-all">
+                        Run Simulation
+                    </a>
                 </div>
             </div>
-
-            <div class="bg-zinc-900/40 border border-zinc-800 p-6 flex flex-col items-center">
-                <h2 class="font-mono text-sm text-zinc-400 tracking-widest uppercase mb-6 w-full border-b border-zinc-800 pb-2">Global Survival Rate (72 Hrs)</h2>
-                <div class="w-full max-w-[250px] aspect-square relative">
-                    <canvas id="globalSurvivalChart"></canvas>
-                </div>
-                <p class="mt-6 font-mono text-xs text-zinc-500 text-center">Based on aggregated simulated blackout scenarios across all networked users.</p>
-            </div>
-
-            <div class="bg-zinc-900/40 border border-zinc-800 p-6 flex flex-col items-center">
-                <h2 class="font-mono text-sm text-zinc-400 tracking-widest uppercase mb-6 w-full border-b border-zinc-800 pb-2">Primary Causes of Failure</h2>
-                <div class="w-full max-w-[250px] aspect-square relative">
-                    <canvas id="failureCausesChart"></canvas>
-                </div>
-                <p class="mt-6 font-mono text-xs text-zinc-500 text-center">Data indicates psychological panic outweighs physical resource scarcity.</p>
-            </div>
-
         </div>
 
-        <div class="mt-12 grid lg:grid-cols-3 gap-8">
-            
-            <div class="lg:col-span-2 bg-red-950/20 border border-red-900/50 p-6 relative overflow-hidden group">
-                <div class="absolute top-0 right-0 p-4 opacity-20">
-                    <svg class="w-24 h-24 text-red-500 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                </div>
-                <h2 class="font-mono text-sm text-red-500 tracking-widest uppercase mb-4 flex items-center gap-2">
-                    <span class="w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
-                    Critical Vulnerability Identified
-                </h2>
-                <h3 class="text-2xl font-bold uppercase text-white mb-2">The "Run Outside" Instinct</h3>
-                <p class="text-zinc-400 font-light mb-4 max-w-xl">
-                    Data shows <strong class="text-red-400">72% of users</strong> instinctually choose to run out of a building during a severe earthquake simulation. In urban environments, this results in fatal injuries from falling glass and facade debris. 
-                </p>
-                <div class="inline-flex items-center gap-2 px-3 py-1 bg-red-500/10 border border-red-500/50 text-red-400 font-mono text-xs">
-                    CORRECT ACTION: Drop, Cover, and Hold On.
-                </div>
-            </div>
-
-            <div class="bg-amber-500/10 border border-amber-500/30 p-6 flex flex-col justify-center items-center text-center">
-                <h2 class="font-mono text-sm text-amber-500 tracking-widest uppercase mb-4">Export Telemetry</h2>
-                <p class="text-zinc-400 text-sm mb-6">Download the raw global JSON dataset for local machine learning model training.</p>
-                
-                <button onclick="downloadCivExitCSV()" class="w-full py-3 bg-amber-500 text-zinc-950 font-mono font-bold text-xs uppercase hover:bg-amber-400 transition-colors flex justify-center items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                    Download RAW (.CSV)
-                </button>
-                <p class="text-[10px] text-zinc-600 font-mono mt-3 uppercase">File Size: 131 B</p>
-            </div>
-
-        </div>
-
-        <script>
-            function downloadCivExitCSV() {
-                const csvContent = "data:text/csv;charset=utf-8,User_ID,Scenario,Panic_Score,Calm_Score,Survived\n1092,Earthquake,8,2,False\n1093,Winter_Blackout,3,7,True\n1094,Urban_Water,9,1,False";
-                const encodedUri = encodeURI(csvContent);
-                const link = document.createElement("a");
-                link.setAttribute("href", encodedUri);
-                link.setAttribute("download", "civexit_telemetry_export.csv");
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
-        </script>
     </main>
 
     <footer class="bg-zinc-900 text-zinc-400 py-12 border-t border-zinc-800 text-sm font-mono relative z-10">
@@ -142,28 +416,265 @@
                     <div class="w-8 h-8 bg-amber-500 text-zinc-950 rounded flex items-center justify-center font-black text-lg">C</div>
                     <span class="font-sans font-black tracking-tight uppercase text-xl">CivExit</span>
                 </div>
-                <p class="text-xs leading-relaxed mb-4">
-                    An offline-first, algorithmic crisis response engine designed to mitigate panic and provide actionable survival intelligence during localized or global grid failures.
-                </p>
+                <p class="text-xs leading-relaxed mb-4">A crisis simulation engine that trains real decision-making under pressure. Three scenarios. Four vital stats. No second chances.</p>
+                <p class="text-amber-500 font-bold text-xs uppercase tracking-widest">Built for AUBG 8.0 Hackathon</p>
             </div>
             <div>
                 <h4 class="text-white font-bold uppercase tracking-widest mb-4 border-b border-zinc-800 pb-2">Directory</h4>
                 <ul class="space-y-2">
                     <li><a href="game.html" class="hover:text-amber-500 transition-colors">> Run Simulation</a></li>
-                    <li><a href="database.html" class="hover:text-amber-500 transition-colors">> Survival Database</a></li>
+                    <li><a href="database.html" class="hover:text-amber-500 transition-colors">> Analytics Dashboard</a></li>
                     <li><a href="quiz.html" class="hover:text-amber-500 transition-colors">> Readiness Assessment</a></li>
                 </ul>
             </div>
             <div>
-                <h4 class="text-white font-bold uppercase tracking-widest mb-4 border-b border-zinc-800 pb-2">System Status</h4>
-                <ul class="space-y-2">
-                    <li class="flex justify-between"><span>Mainframe:</span> <span class="text-green-500">ONLINE</span></li>
-                    <li class="flex justify-between"><span>DB Sync:</span> <span class="text-green-500">SECURE</span></li>
+                <h4 class="text-white font-bold uppercase tracking-widest mb-4 border-b border-zinc-800 pb-2">Data Sources</h4>
+                <ul class="space-y-1 text-xs text-zinc-500">
+                    <li>EM-DAT · UCLouvain</li>
+                    <li>NFPA Fire Loss Reports</li>
+                    <li>FEMA National Household Survey</li>
+                    <li>USGS Earthquake Hazards Program</li>
+                    <li>IDMC Global Displacement Report</li>
+                    <li>WHO Emergency & Disaster Risk</li>
+                    <li>UNDRR Global Assessment Report</li>
                 </ul>
             </div>
         </div>
     </footer>
 
     <script src="src/js/database.js"></script>
+
+    <script>
+    (function () {
+
+        Chart.defaults.color = '#71717a';
+        Chart.defaults.font.family = "'Space Mono', monospace";
+        Chart.defaults.font.size = 10;
+
+        const BORDER = '#09090b';
+        const TIP = {
+            backgroundColor: '#18181b',
+            borderColor: '#3f3f46',
+            borderWidth: 1,
+            titleColor: '#f59e0b',
+            bodyColor: '#a1a1aa',
+            padding: 10,
+            cornerRadius: 2
+        };
+        const LEGEND = {
+            position: 'bottom',
+            labels: { padding: 14, font: { size: 9 }, color: '#71717a', boxWidth: 10 }
+        };
+
+        function donut(id, labels, data, colors, cutout) {
+            var ctx = document.getElementById(id);
+            if (!ctx) return;
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{ data: data, backgroundColor: colors, borderColor: BORDER, borderWidth: 2, hoverOffset: 6 }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: cutout || '55%',
+                    plugins: { legend: LEGEND, tooltip: { ...TIP } }
+                }
+            });
+        }
+
+        function pie(id, labels, data, colors) {
+            var ctx = document.getElementById(id);
+            if (!ctx) return;
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{ data: data, backgroundColor: colors, borderColor: BORDER, borderWidth: 2, hoverOffset: 6 }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: LEGEND, tooltip: { ...TIP } }
+                }
+            });
+        }
+
+        // ── Chart 1: Natural Disaster Deaths by Type (2000–2020, EM-DAT) ──────
+        donut(
+            'chart-deaths-by-type',
+            ['Earthquakes & Tsunamis', 'Storms & Cyclones', 'Droughts & Famine', 'Floods', 'Extreme Temperature', 'Other'],
+            [61, 19, 8, 7, 3, 2],
+            ['#ef4444', '#f59e0b', '#84cc16', '#3b82f6', '#06b6d4', '#71717a']
+        );
+
+        // ── Chart 2: Economic Damage by Disaster Type (2000–2022, World Bank) ──
+        donut(
+            'chart-economic-damage',
+            ['Storms & Hurricanes', 'Floods', 'Earthquakes', 'Drought', 'Wildfires', 'Other'],
+            [38, 31, 18, 9, 3, 1],
+            ['#f59e0b', '#3b82f6', '#ef4444', '#84cc16', '#fb923c', '#71717a']
+        );
+
+        // ── Chart 3: Displacement by Trigger 2022 (IDMC) ─────────────────────
+        donut(
+            'chart-displacement',
+            ['Floods', 'Storms & Cyclones', 'Earthquakes & Tsunamis', 'Wildfires', 'Volcanic Activity', 'Other'],
+            [43, 36, 13, 4, 2, 2],
+            ['#3b82f6', '#f59e0b', '#ef4444', '#fb923c', '#a855f7', '#71717a']
+        );
+
+        // ── Chart 4: Human Response in First 60 Seconds (DRC) ────────────────
+        pie(
+            'chart-human-response',
+            ['Stunned / Behavioural Inaction (75%)', 'Panic Response (15%)', 'Calm, Immediate Action (10%)'],
+            [75, 15, 10],
+            ['#52525b', '#ef4444', '#22c55e']
+        );
+
+        // ── Chart 5: Earthquake Fatality Causes (USGS / WHO) ─────────────────
+        pie(
+            'chart-earthquake-causes',
+            ['Structural Collapse (72%)', 'Tsunami (12%)', 'Post-quake Fire (8%)', 'Landslide / Liquefaction (5%)', 'Other (3%)'],
+            [72, 12, 8, 5, 3],
+            ['#ef4444', '#3b82f6', '#fb923c', '#84cc16', '#71717a']
+        );
+
+        // ── Chart 6: Panic vs Calm Survival (composite) ──────────────────────
+        var ctx6 = document.getElementById('chart-panic-survival');
+        if (ctx6) {
+            new Chart(ctx6, {
+                type: 'bar',
+                data: {
+                    labels: ['Calm, Structured\nResponse', 'Delayed /\nDazed', 'Full Panic\nResponse'],
+                    datasets: [{
+                        label: 'Survival likelihood (%)',
+                        data: [78, 45, 18],
+                        backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'],
+                        borderColor: BORDER,
+                        borderWidth: 1,
+                        borderRadius: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { ...TIP } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { callback: function(v) { return v + '%'; }, color: '#52525b', font: { size: 9 } },
+                            grid: { color: '#27272a' },
+                            border: { color: '#3f3f46' }
+                        },
+                        x: {
+                            ticks: { color: '#71717a', font: { size: 9 } },
+                            grid: { display: false },
+                            border: { color: '#3f3f46' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ── Chart 7: Home Fire Ignition Sources (NFPA 2022) ──────────────────
+        pie(
+            'chart-fire-causes',
+            ['Cooking (49%)', 'Heating Equipment (14%)', 'Electrical / Wiring (9%)', 'Intentional (7%)', 'Smoking (5%)', 'Candles (4%)', 'Other (12%)'],
+            [49, 14, 9, 7, 5, 4, 12],
+            ['#fb923c', '#ef4444', '#f59e0b', '#a855f7', '#71717a', '#fde68a', '#52525b']
+        );
+
+        // ── Chart 8: Where Fire Deaths Occur by Structure (NFPA 2022) ─────────
+        donut(
+            'chart-fire-structure',
+            ['One- & Two-family Homes (73%)', 'Apartments (20%)', 'Other Residential (7%)'],
+            [73, 20, 7],
+            ['#ef4444', '#fb923c', '#71717a'],
+            '60%'
+        );
+
+        // ── Chart 9: Wilderness Fatality Causes (CDC / WMS) ──────────────────
+        pie(
+            'chart-wilderness',
+            ['Hypothermia / Exposure (38%)', 'Dehydration / Heat (22%)', 'Trauma / Falls (18%)', 'Drowning (11%)', 'Navigation Failure (7%)', 'Other (4%)'],
+            [38, 22, 18, 11, 7, 4],
+            ['#06b6d4', '#fb923c', '#ef4444', '#3b82f6', '#84cc16', '#71717a']
+        );
+
+        // ── Chart 10: Preparedness Gap (FEMA 2023, horizontal bar) ────────────
+        var ctx10 = document.getElementById('chart-preparedness');
+        if (ctx10) {
+            new Chart(ctx10, {
+                type: 'bar',
+                data: {
+                    labels: [
+                        'First Aid Knowledge',
+                        'Know Evacuation Routes',
+                        'Emergency Supply Kit',
+                        'Household Emergency Plan',
+                        'Practiced an Emergency Drill',
+                        'Know Local Warning Systems'
+                    ],
+                    datasets: [
+                        {
+                            label: 'Prepared',
+                            data: [54, 47, 49, 39, 28, 35],
+                            backgroundColor: '#f59e0b',
+                            borderColor: BORDER,
+                            borderWidth: 1,
+                            borderRadius: 2
+                        },
+                        {
+                            label: 'Not Prepared',
+                            data: [46, 53, 51, 61, 72, 65],
+                            backgroundColor: '#3f3f46',
+                            borderColor: BORDER,
+                            borderWidth: 1,
+                            borderRadius: 2
+                        }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 14, font: { size: 9 }, color: '#71717a', boxWidth: 10 } },
+                        tooltip: { ...TIP }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            max: 100,
+                            ticks: { callback: function(v) { return v + '%'; }, color: '#52525b', font: { size: 9 } },
+                            grid: { color: '#27272a' },
+                            border: { color: '#3f3f46' }
+                        },
+                        y: {
+                            stacked: true,
+                            ticks: { color: '#71717a', font: { size: 9 } },
+                            grid: { display: false },
+                            border: { color: '#3f3f46' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ── Chart 11: Global Population at Risk (UNDRR 2022) ─────────────────
+        donut(
+            'chart-risk-exposure',
+            ['Exposed to at least 1 hazard (68%)', 'Exposed to 2+ hazards (36%)', 'Low / No exposure (32%)'],
+            [68, 36, 32],
+            ['#ef4444', '#fb923c', '#27272a'],
+            '50%'
+        );
+
+    })();
+    </script>
+
 </body>
 </html>
