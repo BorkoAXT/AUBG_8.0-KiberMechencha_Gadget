@@ -126,13 +126,40 @@ npm run dev
 
 ---
 
-## Deploying to Render
+## Deploying to Vercel
 
-1. Create a **Static Site** web service in Render and connect your GitHub repo.
-2. Set **Build Command:** `npm install && npm run build`
-3. Set **Publish Directory:** `/`
-4. Add environment variables for your Supabase credentials in the Render dashboard.
-5. Deploy — Render auto-deploys on every push to `main`.
+1. Push your repo to GitHub and import it at [vercel.com/new](https://vercel.com/new).
+2. Set **Framework Preset:** `Other`
+3. Set **Build Command:** `npm install && npm run build`
+4. Set **Output Directory:** `.` (root)
+5. Add your Supabase credentials as environment variables in the Vercel project settings (`SUPABASE_URL`, `SUPABASE_KEY`).
+6. Click **Deploy** — Vercel auto-deploys on every push to `main`.
+
+---
+
+## Market Research
+
+### The Problem
+
+Emergency preparedness education in Bulgaria is almost entirely theoretical. Students read about what to do in a fire or earthquake — they don't practice it. When a real event happens, the gap between knowing and doing becomes life-threatening.
+
+### Target Audience
+
+Bulgaria has approximately **716,000 students** enrolled in primary and secondary education (grades 1–12) as of 2025. Sofia alone accounts for roughly **135,000–140,000** of those students, making it by far the largest single urban market. A smaller but high-purchasing-power segment — students in private schools — numbers around **15,000–16,000 nationally**, representing just over 2% of total enrollment but with significantly higher institutional budgets and willingness to adopt ed-tech tools.
+
+### How Students Would
+Modern students already spend significant time in browser-based environments — Google Classroom, Khan Academy, Kahoot, and similar platforms are daily tools. CivExit fits naturally into that habit:
+
+- **In the classroom** — a teacher assigns a scenario before a civil safety lesson. Students run it on school laptops or tablets, fail, discuss why, and run it again. The debrief screen gives the teacher immediate talking points.
+- **At home on a phone** — the simulation is mobile-optimised and requires no install. A student can run a 3–5 minute earthquake scenario during a free period the same way they'd open a game.
+- **As a quiz supplement** — the standalone quiz page measures self-assessed crisis readiness and feeds anonymous data back to the analytics dashboard, which a teacher can pull up live to show the class how prepared (or unprepared) everyone actually is.
+- **Competitive replay** — the scoring and debrief system creates natural replayability. Students compare outcomes, try different decision paths, and develop genuine intuition about prioritisation under pressure — which is the core skill emergency training tries to build.
+
+### Why This Market, Why Now
+
+Civil protection awareness has been a growing policy focus in Southeast Europe following recent natural disasters and geopolitical instability. Schools are looking for low-cost, zero-install tools they can deploy without IT overhead. CivExit runs entirely in a browser with no accounts required for the simulation itself — the barrier to adoption is as close to zero as possible.
+
+The private school segment (~15,000 students) is a practical beachhead: smaller, easier to reach through direct institutional outreach, and more likely to fund pilot programs. From there, the path to the broader 716,000-student national market runs through the Ministry of Education's digital learning initiatives, which have been actively expanding since 2022.
 
 ---
 

@@ -1,0 +1,3 @@
+{
+  "buildCommand": "echo \"const SUPABASE_URL = '$SUPABASE_URL'; const SUPABASE_KEY = '$SUPABASE_KEY'; const SHEETS_URL = '$SHEETS_URL';\" > src/js/config.js && npm install && npm run build"
+}

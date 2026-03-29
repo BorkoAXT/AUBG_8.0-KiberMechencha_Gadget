@@ -83,7 +83,15 @@ const multiAnswers = {}; // stores Set of selected indices per question id
 
 // ─── Supabase ─────────────────────────────────────────────────────────────────
 
-const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let _supabase = null;
+try {
+    if (typeof SUPABASE_URL !== 'undefined' && typeof SUPABASE_KEY !== 'undefined'
+        && SUPABASE_URL && SUPABASE_KEY) {
+        _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+} catch (e) {
+    console.warn('Supabase not available — quiz will run without database sync.', e);
+}
 
 // ─── Render ───────────────────────────────────────────────────────────────────
 
@@ -334,6 +342,7 @@ async function submitAndShowResults() {
 
     // Insert into Supabase
     try {
+        if (!_supabase) throw new Error('No Supabase client');
         const { error } = await _supabase.from('quiz_responses').insert([{
             age_group:               answers.age_group               ?? null,
             panic_response:          answers.panic_response          ?? null,
@@ -479,6 +488,7 @@ async function submitAndShowResults() {
 async function loadAndRenderCharts() {
     let data = [];
     try {
+        if (!_supabase) throw new Error('No Supabase client');
         const { data: rows, error } = await _supabase.from('quiz_responses').select('*');
         if (error) { console.error('Fetch error:', error); }
         else { data = rows ?? []; }
